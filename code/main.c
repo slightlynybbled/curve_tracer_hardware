@@ -7,6 +7,7 @@
 
 
 #include <xc.h>
+#include "libmathq15.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
 // FBS
@@ -48,15 +49,23 @@
 
 /****************************** END CONFIGURATION *****************************/
 
+/*********** Useful defines and macros ****************************************/
 #define DIO_OUTPUT  0
 #define DIO_INPUT   1
 #define DIO_DIGITAL 0
 #define DIO_ANALOG  1
 
+/*********** Variable Declarations ********************************************/
+volatile q16angle_t theta = 0;
+volatile q16angle_t omega = 0;
+
+/*********** Function Declarations ********************************************/
 void initOsc(void);
 void initLowZAnalogOut(void);
 void initInterrupts(void);
 
+
+/*********** Function Implementations *****************************************/
 int main(void) {
     initOsc();
     initLowZAnalogOut();
@@ -115,7 +124,7 @@ void initInterrupts(void){
     
     /* timer interrupts */
     T1CON = 0x0000;
-    PR1 = 250;          // based on 12MIPS, 48samples/sine, 1kHz waveform
+    PR1 = 500;          // based on 12MIPS, 24samples/waveform, 1kHz waveform
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
@@ -131,10 +140,18 @@ void initInterrupts(void){
     return;
 }
 
+/**
+ * The T1Interrupt will be used to load the DACs and generate the sine wave
+ */
 void _ISR _T1Interrupt(void){
+    theta += omega;
     
+    DAC1DAT = q15_fast_sin(theta);
+    DAC2DAT = q15_fast_sin(theta + 32768); // theta + 180 deg
     
     IFS0bits.T1IF = 0;
     
     return;
 }
+
+
