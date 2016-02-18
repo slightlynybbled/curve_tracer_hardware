@@ -56,7 +56,6 @@
 #define DIO_ANALOG  1
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t theta = 0;
 volatile q16angle_t omega = 0;
 
 /*********** Function Declarations ********************************************/
@@ -144,6 +143,7 @@ void initInterrupts(void){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
+    static q16angle_t theta = 0;
     theta += omega;
     
     DAC1DAT = q15_fast_sin(theta);
