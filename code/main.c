@@ -55,8 +55,11 @@
 #define DIO_DIGITAL 0
 #define DIO_ANALOG  1
 
+#define OMEGA_MIN_TO_FAST_SINE      2000
+#define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
+
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 0;
+volatile q16angle_t omega = 1000;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -75,6 +78,7 @@ int main(void) {
          * task is clearing the watchdog timer */
         ClrWdt();
     }
+    
     return 0;
 }
 
@@ -102,13 +106,14 @@ void initLowZAnalogOut(void){
      * peripherals only, sleep behavior doesn't matter,
      * left-aligned input (fractional) */
     DAC1CON = DAC2CON = 0x0802;
+    DAC1CONbits.DACOE = DAC2CONbits.DACOE = 1;
     DAC1CONbits.DACEN = DAC2CONbits.DACEN = 1; // enable after configured
     
     /* Opamp config:
      * higher bandwidth/response, voltage follower config,
      * positive input connected to DAC */
-    AMP1CON = AMP2CON = 0x00A8D;
-    AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
+    // = AMP2CON = 0x00A8D;
+    //AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
     
     return;
 }
@@ -146,8 +151,8 @@ void _ISR _T1Interrupt(void){
     static q16angle_t theta = 0;
     theta += omega;
     
-    DAC1DAT = q15_fast_sin(theta);
-    DAC2DAT = q15_fast_sin(theta + 32768); // theta + 180 deg
+    DAC1DAT = q15_fast_sin(theta) + 32768;
+    DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
     
     IFS0bits.T1IF = 0;
     
