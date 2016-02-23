@@ -106,7 +106,7 @@ void initLowZAnalogOut(void){
      * peripherals only, sleep behavior doesn't matter,
      * left-aligned input (fractional) */
     DAC1CON = DAC2CON = 0x0802;
-    DAC1CONbits.DACOE = DAC2CONbits.DACOE = 1;
+    //DAC1CONbits.DACOE = DAC2CONbits.DACOE = 1;
     DAC1CONbits.DACEN = DAC2CONbits.DACEN = 1; // enable after configured
     
     /* Opamp config:
