@@ -59,7 +59,7 @@
 #define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 1000;
+volatile q16angle_t omega = 1333;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -128,7 +128,7 @@ void initInterrupts(void){
     
     /* timer interrupts */
     T1CON = 0x0000;
-    PR1 = 500;          // based on 12MIPS, 24samples/waveform, 1kHz waveform
+    PR1 = 250;          // based on 12MIPS, 48samples/waveform, 1kHz waveform
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
