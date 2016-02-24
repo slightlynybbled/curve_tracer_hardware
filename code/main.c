@@ -98,8 +98,8 @@ void initLowZAnalogOut(void){
     /* Pin config:
      * according to datasheet, opamp pins
      * should be in 'analog' mode as 'inputs' */
-    TRISBbits.TRISB12 = TRISBbits.TRISB14 = DIO_INPUT;
-    ANSBbits.ANSB12 = ANSBbits.ANSB14 = DIO_ANALOG;
+    TRISBbits.TRISB3 = TRISBbits.TRISB15 = TRISBbits.TRISB14 = DIO_INPUT;
+    ANSBbits.ANSB3 = ANSBbits.ANSB15 = DIO_ANALOG;
     
     /* DAC config:
      * trigger on write, DAC available to internal
@@ -112,8 +112,8 @@ void initLowZAnalogOut(void){
     /* Opamp config:
      * higher bandwidth/response, voltage follower config,
      * positive input connected to DAC */
-    // = AMP2CON = 0x00A8D;
-    //AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
+    AMP1CON = AMP2CON = 0x00A8D;
+    AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
     
     return;
 }
