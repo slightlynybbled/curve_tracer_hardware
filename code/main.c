@@ -112,7 +112,7 @@ void initLowZAnalogOut(void){
     /* Opamp config:
      * higher bandwidth/response, voltage follower config,
      * positive input connected to DAC */
-    AMP1CON = AMP2CON = 0x00AD;
+    AMP1CON = AMP2CON = 0x002D;
     AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
     
     return;
