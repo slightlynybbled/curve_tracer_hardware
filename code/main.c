@@ -59,12 +59,13 @@
 #define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 1333;
+volatile q16angle_t omega = 2667;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
 void initLowZAnalogOut(void);
 void initInterrupts(void);
+void initPwm(void);
 
 
 /*********** Function Implementations *****************************************/
@@ -72,6 +73,7 @@ int main(void) {
     initOsc();
     initLowZAnalogOut();
     initInterrupts();
+    initPwm();
     
     while(1){
         /* for the moment, the only background 
@@ -140,6 +142,33 @@ void initInterrupts(void){
     /* adc interrupts */
     IFS0bits.AD1IF = 0;
     // IEC0bits.AD1IE = 1;
+    
+    return;
+}
+
+void initPwm(void){
+    // use OC1C (pin 21, RB10) and OC2A (pin 22, RB11)
+    TRISBbits.TRISB10 = TRISBbits.TRISB11 = DIO_DIGITAL;
+    
+    /* Initialize MCCP module
+     *  */
+    CCP1CON1L = CCP2CON1L = 0x0005;
+    CCP1CON1H = CCP2CON1H = 0x0000;
+    CCP1CON2L = CCP2CON2L = 0x0000;
+    CCP1CON2H = 0x0400; // enable output OC1C
+    CCP2CON2H = 0x0100; // enable output 0C2A
+    CCP1CON3L = CCP2CON3L = 0;  // dead time disabled
+    CCP1CON3H = CCP2CON3H = 0x0100;
+    
+    CCP1CON1Lbits.CCPON = CCP2CON1Lbits.CCPON = 1;
+    
+    /* period registers */
+    CCP1PRH = CCP2PRH = 0;
+    CCP1PRL = CCP2PRL = 256;
+    
+    /* duty cycle registers */
+    CCP1RA = CCP2RA = 0;
+    CCP1RB = CCP2RB = 512;
     
     return;
 }
