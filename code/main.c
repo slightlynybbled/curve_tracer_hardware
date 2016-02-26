@@ -168,7 +168,7 @@ void initPwm(void){
     
     /* period registers */
     CCP1PRH = CCP2PRH = 0;
-    CCP1PRL = CCP2PRL = 512;
+    CCP1PRL = CCP2PRL = 1024;
     
     /* duty cycle registers */
     CCP1RA = CCP2RA = 0;
