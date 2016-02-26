@@ -156,6 +156,10 @@ void initPwm(void){
     
     /* Initialize MCCP module
      *  */
+        /* period registers */
+    CCP1PRH = CCP2PRH = 0;
+    CCP1PRL = CCP2PRL = 1024;
+    
     CCP1CON1L = CCP2CON1L = 0x0005;
     CCP1CON1H = CCP2CON1H = 0x0000;
     CCP1CON2L = CCP2CON2L = 0x0000;
@@ -165,10 +169,6 @@ void initPwm(void){
     CCP1CON3H = CCP2CON3H = 0x0000;
     
     CCP1CON1Lbits.CCPON = CCP2CON1Lbits.CCPON = 1;
-    
-    /* period registers */
-    CCP1PRH = CCP2PRH = 0;
-    CCP1PRL = CCP2PRL = 1024;
     
     /* duty cycle registers */
     CCP1RA = CCP2RA = 0;
