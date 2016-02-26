@@ -66,7 +66,8 @@ void initOsc(void);
 void initLowZAnalogOut(void);
 void initInterrupts(void);
 void initPwm(void);
-void setDutyCycle(q15_t dutyCycle);
+void setDutyCycleHZ1(q15_t dutyCycle);
+void setDutyCycleHZ2(q15_t dutyCycle);
 
 
 /*********** Function Implementations *****************************************/
@@ -76,8 +77,9 @@ int main(void) {
     initInterrupts();
     initPwm();
     
-    /* set the duty cycle to ~50% to begin with */
-    setDutyCycle(16384);
+    /* set the initial duty cycles */
+    setDutyCycleHZ1(16384);
+    setDutyCycleHZ2(8192);
     
     while(1){
         /* for the moment, the only background 
@@ -177,8 +179,13 @@ void initPwm(void){
     return;
 }
 
-void setDutyCycle(q15_t dutyCycle){
-    CCP1RB = CCP2RB = q15_mul(dutyCycle, CCP2PRL);
+void setDutyCycleHZ1(q15_t dutyCycle){
+    CCP1RB = q15_mul(dutyCycle, CCP1PRL);
+    return;
+}
+
+void setDutyCycleHZ2(q15_t dutyCycle){
+    CCP2RB = q15_mul(dutyCycle, CCP2PRL);
     return;
 }
 
