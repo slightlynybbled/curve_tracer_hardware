@@ -66,6 +66,7 @@ void initOsc(void);
 void initLowZAnalogOut(void);
 void initInterrupts(void);
 void initPwm(void);
+void setDutyCycle(q15_t dutyCycle);
 
 
 /*********** Function Implementations *****************************************/
@@ -74,6 +75,9 @@ int main(void) {
     initLowZAnalogOut();
     initInterrupts();
     initPwm();
+    
+    /* set the duty cycle to ~50% to begin with */
+    setDutyCycle(16384);
     
     while(1){
         /* for the moment, the only background 
@@ -155,21 +159,26 @@ void initPwm(void){
     CCP1CON1L = CCP2CON1L = 0x0005;
     CCP1CON1H = CCP2CON1H = 0x0000;
     CCP1CON2L = CCP2CON2L = 0x0000;
-    CCP1CON2H = 0x0400; // enable output OC1C
-    CCP2CON2H = 0x0100; // enable output 0C2A
+    CCP1CON2H = 0x8400; // enable output OC1C
+    CCP2CON2H = 0x8100; // enable output 0C2A
     CCP1CON3L = CCP2CON3L = 0;  // dead time disabled
-    CCP1CON3H = CCP2CON3H = 0x0100;
+    CCP1CON3H = CCP2CON3H = 0x0000;
     
     CCP1CON1Lbits.CCPON = CCP2CON1Lbits.CCPON = 1;
     
     /* period registers */
     CCP1PRH = CCP2PRH = 0;
-    CCP1PRL = CCP2PRL = 256;
+    CCP1PRL = CCP2PRL = 512;
     
     /* duty cycle registers */
     CCP1RA = CCP2RA = 0;
-    CCP1RB = CCP2RB = 512;
+    CCP1RB = CCP2RB = 0;
     
+    return;
+}
+
+void setDutyCycle(q15_t dutyCycle){
+    CCP1RB = CCP2RB = q15_mul(dutyCycle, CCP2PRL);
     return;
 }
 
