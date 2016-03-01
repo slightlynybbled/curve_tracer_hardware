@@ -58,6 +58,12 @@
 #define OMEGA_MIN_TO_FAST_SINE      2000
 #define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
 
+#define LD_VOLTAGE_1_AN 0x0101
+#define LD_VOLTAGE_0_AN 0x0202
+#define HZ_VOLTAGE_1_AN 0x0f0f
+#define HZ_OVLTAGE_2_AN 0x1010
+#define CURRENT_VOLTAGE_AN  0x1414
+
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 2667;
 
@@ -246,45 +252,47 @@ void _ISR _ADC1Interrupt(void){
     AD1CON1bits.ASAM = 0; // auto-sample off
     
     switch(AD1CHS){
-        case 0x0101:
+        case LD_VOLTAGE_1_AN:
         {
-            AD1CHS = 0x0202;
-            LATBbits.LATB7 = 1;
+            /* load voltage 1 (low side) */
+            AD1CHS = LD_VOLTAGE_0_AN;
             
             break;
         }
 
-        case 0x0202:
+        case LD_VOLTAGE_0_AN:
         {
-            AD1CHS = 0x0f0f;
+            /* load voltage 0 (high side) */
+            AD1CHS = CURRENT_VOLTAGE_AN;
             
             break;
         }
         
-        case 0x0f0f:
+        case CURRENT_VOLTAGE_AN:
         {
-            AD1CHS = 0x1010;
+            /* hz out 1 */
+            AD1CHS = HZ_VOLTAGE_1_AN;
             
             break;
         }
         
-        case 0x1010:
+        case HZ_VOLTAGE_1_AN:
         {
-            AD1CHS = 0x1414;
+            AD1CHS = HZ_OVLTAGE_2_AN;
             
             break;
         }
         
-        case 0x1414:
+        case HZ_OVLTAGE_2_AN:
         {
-            AD1CHS = 0x0101;
+            AD1CHS = LD_VOLTAGE_1_AN;
             
             break;
         }
         
         default:
         {
-            
+            while(1); // programmer's trap
         }
     }
     
