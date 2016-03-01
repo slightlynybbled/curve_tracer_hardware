@@ -245,12 +245,11 @@ void _ISR _T1Interrupt(void){
 void _ISR _ADC1Interrupt(void){
     AD1CON1bits.ASAM = 0; // auto-sample off
     
-    LATBbits.LATB7 = 1;
-    
     switch(AD1CHS){
         case 0x0101:
         {
             AD1CHS = 0x0202;
+            LATBbits.LATB7 = 1;
             
             break;
         }
@@ -288,8 +287,6 @@ void _ISR _ADC1Interrupt(void){
             
         }
     }
-    
-    LATBbits.LATB7 = 0;
     
     AD1CON1bits.ASAM = 1; // auto-sample
     
