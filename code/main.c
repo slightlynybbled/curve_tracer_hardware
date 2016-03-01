@@ -64,8 +64,17 @@
 #define HZ_OVLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
+#define NUM_OF_SAMPLES 100
+
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 2667;
+
+volatile q15_t loadVoltageL = 0;
+volatile q15_t loadVoltage[NUM_OF_SAMPLES] = {0};
+volatile q15_t loadCurrent[NUM_OF_SAMPLES] = {0};
+volatile q15_t sampleIndex = 0;
+volatile q15_t hz1Voltage = 0;
+volatile q15_t hz2Voltage = 0;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -257,6 +266,8 @@ void _ISR _ADC1Interrupt(void){
             /* load voltage 1 (low side) */
             AD1CHS = LD_VOLTAGE_0_AN;
             
+            loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
+            
             break;
         }
 
@@ -265,27 +276,40 @@ void _ISR _ADC1Interrupt(void){
             /* load voltage 0 (high side) */
             AD1CHS = CURRENT_VOLTAGE_AN;
             
+            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+            
             break;
         }
         
         case CURRENT_VOLTAGE_AN:
         {
-            /* hz out 1 */
+            /* current 1 */
             AD1CHS = HZ_VOLTAGE_1_AN;
+            
+            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1);
+            
+            if(++sampleIndex >= NUM_OF_SAMPLES)
+                sampleIndex = 0;
             
             break;
         }
         
         case HZ_VOLTAGE_1_AN:
         {
+            /* hz out 1 */
             AD1CHS = HZ_OVLTAGE_2_AN;
+            
+            hz1Voltage = (q15_t)(ADC1BUF0 >> 1);
             
             break;
         }
         
         case HZ_OVLTAGE_2_AN:
         {
+            /* hz out 2 */
             AD1CHS = LD_VOLTAGE_1_AN;
+            
+            hz2Voltage = (q15_t)(ADC1BUF0 >> 1);
             
             break;
         }
