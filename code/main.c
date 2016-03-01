@@ -66,6 +66,8 @@ void initOsc(void);
 void initLowZAnalogOut(void);
 void initInterrupts(void);
 void initPwm(void);
+void initAdc(void);
+void initUart(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
@@ -76,6 +78,8 @@ int main(void) {
     initLowZAnalogOut();
     initInterrupts();
     initPwm();
+    initAdc();
+    initUart();
     
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
@@ -145,10 +149,6 @@ void initInterrupts(void){
     IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
     // IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
     
-    /* adc interrupts */
-    IFS0bits.AD1IF = 0;
-    // IEC0bits.AD1IE = 1;
-    
     return;
 }
 
@@ -158,7 +158,7 @@ void initPwm(void){
     
     /* Initialize MCCP module
      *  */
-        /* period registers */
+    /* period registers */
     CCP1PRH = CCP2PRH = 0;
     CCP1PRL = CCP2PRL = 1024;
     
@@ -175,6 +175,44 @@ void initPwm(void){
     /* duty cycle registers */
     CCP1RA = CCP2RA = 0;
     CCP1RB = CCP2RB = 0;
+    
+    return;
+}
+
+void initAdc(void){
+    /* set up the analog pins as analog inputs */
+    TRISAbits.TRISA1 = 
+            TRISBbits.TRISB0 = 
+            TRISBbits.TRISB4 =
+            TRISAbits.TRISA4 = 
+            TRISBbits.TRISB6 = DIO_INPUT;
+    ANSAbits.ANSA1 =
+            ANSBbits.ANSB0 =
+            ANSBbits.ANSB4 =
+            ANSAbits.ANSA4 =
+            ANSBbits.ANSB6 = DIO_ANALOG;
+    
+    AD1CON1 = 0x0270;   /* Internal counter triggers conversion
+                         * FORM = left justified  */
+    AD1CON2 = 0x003C;   /* Set AD1IF after every 16 samples */
+    AD1CON3 = 0x0107;   /* Sample time = 1Tad, Tad = 8 * Tcy */
+    
+    AD1CHS = 0x0101;    /* AN1 */
+    AD1CSSL = 0;
+    
+    AD1CON1bits.ADON = 1; // turn ADC ON
+    AD1CON1bits.ASAM = 1; // auto-sample
+    
+    /* adc interrupts */
+    IFS0bits.AD1IF = 0;
+    IEC0bits.AD1IE = 1;
+    
+    return;
+}
+
+void initUart(void){
+    TRISBbits.TRISB7 = DIO_OUTPUT;
+    ANSBbits.ANSB7 = DIO_DIGITAL;
     
     return;
 }
@@ -204,4 +242,58 @@ void _ISR _T1Interrupt(void){
     return;
 }
 
+void _ISR _ADC1Interrupt(void){
+    AD1CON1bits.ASAM = 0; // auto-sample off
+    
+    LATBbits.LATB7 = 1;
+    
+    switch(AD1CHS){
+        case 0x0101:
+        {
+            AD1CHS = 0x0202;
+            
+            break;
+        }
+
+        case 0x0202:
+        {
+            AD1CHS = 0x0f0f;
+            
+            break;
+        }
+        
+        case 0x0f0f:
+        {
+            AD1CHS = 0x1010;
+            
+            break;
+        }
+        
+        case 0x1010:
+        {
+            AD1CHS = 0x1414;
+            
+            break;
+        }
+        
+        case 0x1414:
+        {
+            AD1CHS = 0x0101;
+            
+            break;
+        }
+        
+        default:
+        {
+            
+        }
+    }
+    
+    LATBbits.LATB7 = 0;
+    
+    AD1CON1bits.ASAM = 1; // auto-sample
+    
+    /* clear the flag */
+    IFS0bits.AD1IF = 0;
+}
 
