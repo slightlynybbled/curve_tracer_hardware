@@ -285,8 +285,6 @@ Text GLabel 4700 3500 2    60   Output ~ 0
 LZ_OUT_1
 Text GLabel 2900 3900 0    60   Output ~ 0
 LZ_OUT_0
-Text GLabel 2900 4200 0    60   Input ~ 0
-HZ_OUT_0
 Text GLabel 2900 4300 0    60   Input ~ 0
 HZ_OUT_1
 Text GLabel 2900 4400 0    60   Input ~ 0
@@ -892,8 +890,6 @@ Wire Wire Line
 	3450 1900 3450 1800
 Wire Wire Line
 	3450 1450 3450 1600
-Wire Wire Line
-	2900 4200 3150 4200
 Wire Wire Line
 	3150 4300 2900 4300
 Wire Wire Line
