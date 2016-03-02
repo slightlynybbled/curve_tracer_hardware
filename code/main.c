@@ -67,7 +67,7 @@
 #define NUM_OF_SAMPLES 100
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 2667;
+volatile q16angle_t omega = 1333;
 
 volatile q15_t loadVoltageL = 0;
 volatile q15_t loadVoltage[NUM_OF_SAMPLES] = {0};
@@ -155,7 +155,7 @@ void initInterrupts(void){
     
     /* timer interrupts */
     T1CON = 0x0000;
-    PR1 = 250;          // based on 12MIPS, 48samples/waveform, 1kHz waveform
+    PR1 = 1000;          // based on 12MIPS, 48samples/waveform, 1kHz waveform
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
@@ -207,12 +207,12 @@ void initAdc(void){
             ANSAbits.ANSA4 =
             ANSBbits.ANSB6 = DIO_ANALOG;
     
-    AD1CON1 = 0x0270;   /* Internal counter triggers conversion
+    AD1CON1 = 0x0200;   /* Internal counter triggers conversion
                          * FORM = left justified  */
-    AD1CON2 = 0x003C;   /* Set AD1IF after every 16 samples */
-    AD1CON3 = 0x0107;   /* Sample time = 1Tad, Tad = 8 * Tcy */
+    AD1CON2 = 0x0000;   /* Set AD1IF after every 16 samples */
+    AD1CON3 = 0x0007;   /* Sample time = 1Tad, Tad = 8 * Tcy */
     
-    AD1CHS = 0x0101;    /* AN1 */
+    AD1CHS = CURRENT_VOLTAGE_AN;    /* AN1 */
     AD1CSSL = 0;
     
     AD1CON1bits.ADON = 1; // turn ADC ON
@@ -253,74 +253,39 @@ void _ISR _T1Interrupt(void){
     DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
     
     IFS0bits.T1IF = 0;
+    AD1CON1bits.SAMP = 0;
     
     return;
 }
 
 void _ISR _ADC1Interrupt(void){
-    AD1CON1bits.ASAM = 0; // auto-sample off
+    LATBbits.LATB7 = 1;
     
     switch(AD1CHS){
         case LD_VOLTAGE_1_AN:
         {
-            /* load voltage 1 (low side) */
-            AD1CHS = LD_VOLTAGE_0_AN;
-            
-            loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
-            
-            break;
-        }
-
-        case LD_VOLTAGE_0_AN:
-        {
-            /* load voltage 0 (high side) */
             AD1CHS = CURRENT_VOLTAGE_AN;
-            
-            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+            AD1CON1bits.SAMP = 0;
             
             break;
         }
         
         case CURRENT_VOLTAGE_AN:
         {
-            /* current 1 */
-            AD1CHS = HZ_VOLTAGE_1_AN;
-            
             loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1);
-            
+
             if(++sampleIndex >= NUM_OF_SAMPLES)
                 sampleIndex = 0;
             
-            break;
-        }
-        
-        case HZ_VOLTAGE_1_AN:
-        {
-            /* hz out 1 */
-            AD1CHS = HZ_OVLTAGE_2_AN;
-            
-            hz1Voltage = (q15_t)(ADC1BUF0 >> 1);
-            
-            break;
-        }
-        
-        case HZ_OVLTAGE_2_AN:
-        {
-            /* hz out 2 */
             AD1CHS = LD_VOLTAGE_1_AN;
             
-            hz2Voltage = (q15_t)(ADC1BUF0 >> 1);
-            
             break;
         }
         
-        default:
-        {
-            while(1); // programmer's trap
-        }
+        default: {}
     }
-    
-    AD1CON1bits.ASAM = 1; // auto-sample
+   
+    LATBbits.LATB7 = 0;
     
     /* clear the flag */
     IFS0bits.AD1IF = 0;
