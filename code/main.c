@@ -64,7 +64,7 @@
 #define HZ_VOLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES 100
+#define NUM_OF_SAMPLES 400
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 1333;
@@ -209,7 +209,7 @@ void initAdc(void){
     
     AD1CON1 = 0x0200;   /* Internal counter triggers conversion
                          * FORM = left justified  */
-    AD1CON2 = 0x0000;   /* Set AD1IF after every 16 samples */
+    AD1CON2 = 0x0000;   /* Set AD1IF after every 1 samples */
     AD1CON3 = 0x0007;   /* Sample time = 1Tad, Tad = 8 * Tcy */
     
     AD1CHS = CURRENT_VOLTAGE_AN;    /* AN1 */
@@ -218,7 +218,7 @@ void initAdc(void){
     AD1CON1bits.ADON = 1; // turn ADC ON
     AD1CON1bits.ASAM = 1; // auto-sample
     
-    /* adc interrupts */
+    /* analog-to-digital interrupts */
     IFS0bits.AD1IF = 0;
     IEC0bits.AD1IE = 1;
     
@@ -247,6 +247,8 @@ void setDutyCycleHZ2(q15_t dutyCycle){
  */
 void _ISR _T1Interrupt(void){
     static q16angle_t theta = 0;
+    static q16angle_t thetaLast = 0;
+    thetaLast = theta;
     theta += omega;
     
     DAC1DAT = q15_fast_sin(theta) + 32768;
@@ -254,6 +256,10 @@ void _ISR _T1Interrupt(void){
     
     IFS0bits.T1IF = 0;
     AD1CON1bits.SAMP = 0;
+    
+    /* reset sampleIndex on every cycle */
+    if((thetaLast > 32768) && (theta < 32768))
+        sampleIndex = 0;
     
     return;
 }
@@ -264,25 +270,25 @@ void _ISR _ADC1Interrupt(void){
     switch(AD1CHS){
         case LD_VOLTAGE_1_AN:
         {
+            loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
             AD1CHS = LD_VOLTAGE_0_AN;
             AD1CON1bits.SAMP = 0;
-            loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
 
             break;
         }
 
         case LD_VOLTAGE_0_AN:
         {
+            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
             AD1CHS = CURRENT_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
-            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
 
             break;
         }
 
         case CURRENT_VOLTAGE_AN:
         {
-            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1);
+            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - hz1Voltage;
 
             if(++sampleIndex >= NUM_OF_SAMPLES)
                 sampleIndex = 0;
