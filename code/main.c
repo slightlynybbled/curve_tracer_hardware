@@ -259,83 +259,59 @@ void _ISR _T1Interrupt(void){
 }
 
 void _ISR _ADC1Interrupt(void){
-    static unsigned int hzTestCounter = 0;
-    
     LATBbits.LATB7 = 1;
     
-    /* when the hz flag is 1, then stop sampling the load 
-     * characteristics and instead sample the hz voltages.  
-     * This keeps the hz voltage sampling infrequent */
-    if(hzTestCounter > 1000){
-        switch(AD1CHS){
-            case LD_VOLTAGE_1_AN:
-            case LD_VOLTAGE_0_AN:
-            case CURRENT_VOLTAGE_AN:
-            {
-                AD1CHS = HZ_VOLTAGE_1_AN;
-                AD1CON1bits.SAMP = 0;
-                ADC1BUF0;
-                
-                break;
-            }
-            
-            case HZ_VOLTAGE_1_AN:
-            {
-                AD1CHS = HZ_VOLTAGE_2_AN;
-                AD1CON1bits.SAMP = 0;
-                hz1Voltage = (q15_t)(ADC1BUF0 >> 1);
-                
-                break;
-            }
-            
-            case HZ_VOLTAGE_2_AN:
-            {
-                AD1CHS = LD_VOLTAGE_1_AN;
-                AD1CON1bits.SAMP = 0;
-                hz2Voltage = (q15_t)(ADC1BUF0 >> 1);
-                hzTestCounter = 0;
-                
-                break;
-            }
-            
-            default: {}
+    switch(AD1CHS){
+        case LD_VOLTAGE_1_AN:
+        {
+            AD1CHS = LD_VOLTAGE_0_AN;
+            AD1CON1bits.SAMP = 0;
+            loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
+
+            break;
         }
-    }else{
-        switch(AD1CHS){
-            case LD_VOLTAGE_1_AN:
-            {
-                AD1CHS = LD_VOLTAGE_0_AN;
-                AD1CON1bits.SAMP = 0;
-                loadVoltageL = (q15_t)(ADC1BUF0 >> 1);
 
-                break;
-            }
+        case LD_VOLTAGE_0_AN:
+        {
+            AD1CHS = CURRENT_VOLTAGE_AN;
+            AD1CON1bits.SAMP = 0;
+            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
 
-            case LD_VOLTAGE_0_AN:
-            {
-                AD1CHS = CURRENT_VOLTAGE_AN;
-                AD1CON1bits.SAMP = 0;
-                loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
-
-                break;
-            }
-
-            case CURRENT_VOLTAGE_AN:
-            {
-                loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1);
-
-                if(++sampleIndex >= NUM_OF_SAMPLES)
-                    sampleIndex = 0;
-
-                AD1CHS = LD_VOLTAGE_1_AN;
-
-                break;
-            }
-
-            default: {}
+            break;
         }
-        
-        hzTestCounter++;
+
+        case CURRENT_VOLTAGE_AN:
+        {
+            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1);
+
+            if(++sampleIndex >= NUM_OF_SAMPLES)
+                sampleIndex = 0;
+
+            AD1CHS = HZ_VOLTAGE_1_AN;
+            AD1CON1bits.SAMP = 0;
+            
+
+            break;
+        }
+
+        case HZ_VOLTAGE_1_AN:
+        {
+            hz1Voltage = (q15_t)(ADC1BUF0 >> 1);
+            AD1CHS = HZ_VOLTAGE_2_AN;
+            AD1CON1bits.SAMP = 0;
+
+            break;
+        }
+
+        case HZ_VOLTAGE_2_AN:
+        {
+            hz2Voltage = (q15_t)(ADC1BUF0 >> 1);
+            AD1CHS = LD_VOLTAGE_1_AN;
+
+            break;
+        }
+
+        default: {}
     }
 
    
