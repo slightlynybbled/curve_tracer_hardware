@@ -4,14 +4,13 @@
  *  Created on: Sep 27, 2015
  *      Author: Jason
  */
- 
+
+#include <xc.h>
 #include "task.h"
-#include "lib430.h"
+
 
 #define MAX_NUM_OF_TASKS	4
 #define MAX_SYS_TICKS_VAL	0x7ff00000
-
-static volatile uint32_t systemTicks = 0;
 
 /* create structure that consists of a function pointer and period */
 typedef struct {
@@ -21,8 +20,13 @@ typedef struct {
 }Task;
 
 static Task task[MAX_NUM_OF_TASKS];
+static volatile uint32_t systemTicks = 0;
+
+void (*TMR_timedFunctPtr)();
 
 void TASK_systemTicksCounter();	// function declaration
+void TMR_init(void (*functPtr)());
+void TMR_disableInterrupt();
 
 void TASK_systemTicksCounter(){
 	systemTicks++;
@@ -146,5 +150,41 @@ void TASK_manage(){
 				}
 			}
 		}
+        
+        ClrWdt();
 	}
 }
+
+void TMR_init(void (*functPtr)()){
+	TMR_timedFunctPtr = functPtr;
+
+    /* period registers */
+    CCP3PRH = 0;
+    CCP3PRL = 12000;
+    
+    CCP3CON1L = 0x0000; // timer mode
+    CCP3CON1H = 0x0000;
+    CCP3CON2L = 0x0000;
+    CCP3CON2H = 0x0000;
+    CCP3CON3L = 0;
+    CCP3CON3H = 0x0000;
+    
+    IFS0bits.CCP3IF = 0;
+    IEC0bits.CCP3IE = 1;
+    
+    CCP3CON1Lbits.CCPON = 1;
+}
+
+void TMR_disableInterrupt(){
+    IEC0bits.CCP3IE = 0;
+}
+
+void _ISR  _CCP3Interrupt(){
+    if(TMR_timedFunctPtr != 0)
+		(*TMR_timedFunctPtr)();
+    
+    IFS0bits.CCP3IF = 0;
+}
+
+
+

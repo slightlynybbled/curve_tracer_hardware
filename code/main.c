@@ -8,6 +8,7 @@
 
 #include <xc.h>
 #include "libmathq15.h"
+#include "task.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
 // FBS
@@ -96,15 +97,13 @@ int main(void) {
     initAdc();
     initUart();
     
+    TASK_init();
+    
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
     setDutyCycleHZ2(8192);
     
-    while(1){
-        /* for the moment, the only background 
-         * task is clearing the watchdog timer */
-        ClrWdt();
-    }
+    TASK_manage();
     
     return 0;
 }
