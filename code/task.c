@@ -8,7 +8,6 @@
 #include <xc.h>
 #include "task.h"
 
-
 #define MAX_NUM_OF_TASKS	4
 #define MAX_SYS_TICKS_VAL	0x7ff00000
 
@@ -169,22 +168,20 @@ void TMR_init(void (*functPtr)()){
     CCP3CON3L = 0;
     CCP3CON3H = 0x0000;
     
-    IFS0bits.CCP3IF = 0;
-    IEC0bits.CCP3IE = 1;
+    IFS1bits.CCT3IF = 0;
+    IEC1bits.CCT3IE = 1;
     
     CCP3CON1Lbits.CCPON = 1;
 }
 
 void TMR_disableInterrupt(){
-    IEC0bits.CCP3IE = 0;
+    IEC1bits.CCT3IE = 0;
 }
 
-void _ISR  _CCP3Interrupt(){
+void _ISR _CCT3Interrupt(){
     if(TMR_timedFunctPtr != 0)
 		(*TMR_timedFunctPtr)();
     
-    IFS0bits.CCP3IF = 0;
+    IFS1bits.CCT3IF = 0;
 }
-
-
 
