@@ -86,6 +86,8 @@ void initAdc(void);
 void initUart(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
+void hz1Control(void);
+void hz2Control(void);
 
 
 /*********** Function Implementations *****************************************/
@@ -102,6 +104,10 @@ int main(void) {
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
     setDutyCycleHZ2(8192);
+    
+    /* add tasks */
+    TASK_add(&hz1Control, 20);
+    TASK_add(&hz2Control, 20);
     
     TASK_manage();
     
@@ -241,6 +247,18 @@ void setDutyCycleHZ2(q15_t dutyCycle){
     return;
 }
 
+void hz1Control(void){
+
+    
+    return;
+}
+
+void hz2Control(void){
+    
+    
+    return;
+}
+
 /**
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
@@ -264,8 +282,6 @@ void _ISR _T1Interrupt(void){
 }
 
 void _ISR _ADC1Interrupt(void){
-    LATBbits.LATB7 = 1;
-    
     switch(AD1CHS){
         case LD_VOLTAGE_1_AN:
         {
@@ -318,9 +334,6 @@ void _ISR _ADC1Interrupt(void){
 
         default: {}
     }
-
-   
-    LATBbits.LATB7 = 0;
     
     /* clear the flag */
     IFS0bits.AD1IF = 0;
