@@ -86,9 +86,6 @@ void initAdc(void);
 void initUart(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
-void hz1Control(void);
-void hz2Control(void);
-
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -104,10 +101,6 @@ int main(void) {
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
     setDutyCycleHZ2(8192);
-    
-    /* add tasks */
-    TASK_add(&hz1Control, 20);
-    TASK_add(&hz2Control, 20);
     
     TASK_manage();
     
@@ -156,18 +149,12 @@ void initInterrupts(void){
     INTCON1 = 0x8000;
     INTCON2 = 0x4000;
     
-    /* configure individual interrupts */
-    
     /* timer interrupts */
     T1CON = 0x0000;
     PR1 = 1000;          // based on 12MIPS, 48samples/waveform, 1kHz waveform
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
-    
-    /* uart interrupts */
-    IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
-    // IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
     
     return;
 }
@@ -234,6 +221,10 @@ void initUart(void){
     TRISBbits.TRISB7 = DIO_OUTPUT;
     ANSBbits.ANSB7 = DIO_DIGITAL;
     
+    /* uart interrupts */
+    IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
+    // IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
+    
     return;
 }
 
@@ -244,18 +235,6 @@ void setDutyCycleHZ1(q15_t dutyCycle){
 
 void setDutyCycleHZ2(q15_t dutyCycle){
     CCP2RB = q15_mul(dutyCycle, CCP2PRL);
-    return;
-}
-
-void hz1Control(void){
-
-    
-    return;
-}
-
-void hz2Control(void){
-    
-    
     return;
 }
 
