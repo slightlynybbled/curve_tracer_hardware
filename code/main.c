@@ -65,7 +65,7 @@
 #define HZ_VOLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES 400
+#define NUM_OF_SAMPLES 200
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 1333;
