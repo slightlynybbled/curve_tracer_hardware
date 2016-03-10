@@ -20,13 +20,13 @@
 #pragma config GCP = OFF                // General Segment Code Protect (No Protection)
 
 // FOSCSEL
-#pragma config FNOSC = FRCPLL           // Oscillator Select (Fast RC Oscillator with Postscaler and PLL Module (FRCDIV+PLL))
+#pragma config FNOSC = PRI              // Oscillator Select (Primary Oscillator (XT, HS, EC))
 #pragma config SOSCSRC = ANA            // SOSC Source Type (Analog Mode for use with crystal)
 #pragma config LPRCSEL = LP             // LPRC Oscillator Power and Accuracy (Low Power, Low Accuracy Mode)
 #pragma config IESO = ON                // Internal External Switch Over bit (Internal External Switchover mode enabled (Two-speed Start-up enabled))
 
 // FOSC
-#pragma config POSCMOD = NONE           // Primary Oscillator Configuration bits (Primary oscillator disabled)
+#pragma config POSCMOD = EC             // Primary Oscillator Configuration bits (External clock mode selected)
 #pragma config OSCIOFNC = CLKO          // CLKO Enable Configuration bit (CLKO output signal enabled)
 #pragma config POSCFREQ = HS            // Primary Oscillator Frequency Range Configuration bits (Primary oscillator/external clock input frequency greater than 8MHz)
 #pragma config SOSCSEL = SOSCHP         // SOSC Power Selection Configuration bits (Secondary Oscillator configured for high-power operation)
@@ -40,6 +40,7 @@
 
 // FPOR
 #pragma config BOREN = BOR3             // Brown-out Reset Enable bits (Brown-out Reset enabled in hardware, SBOREN bit disabled)
+#pragma config RETCFG = OFF             //  (Retention regulator is not available)
 #pragma config PWRTEN = ON              // Power-up Timer Enable bit (PWRT enabled)
 #pragma config I2C1SEL = PRI            // Alternate I2C1 Pin Mapping bit (Use Default SCL1/SDA1 Pins For I2C1)
 #pragma config BORV = V18               // Brown-out Reset Voltage bits (Brown-out Reset set to lowest voltage (1.8V))
@@ -219,7 +220,13 @@ void initAdc(void){
 
 void initUart(void){
     TRISBbits.TRISB7 = DIO_OUTPUT;
+    TRISBbits.TRISB2 = DIO_INPUT;
     ANSBbits.ANSB7 = DIO_DIGITAL;
+    
+    /* baud rate = 9600bps 
+     * U1BRG = (16000000/(16*9600)) - 1 = 27.77 = 28 // 16MIPS
+     * 
+     */
     
     /* uart interrupts */
     IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
