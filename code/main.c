@@ -7,6 +7,7 @@
 
 
 #include <xc.h>
+#include <p24FV16KM202.h>
 #include "libmathq15.h"
 #include "task.h"
 
@@ -85,6 +86,7 @@ void initInterrupts(void);
 void initPwm(void);
 void initAdc(void);
 void initUart(void);
+void sendByte(char byte);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
@@ -219,20 +221,31 @@ void initAdc(void){
 }
 
 void initUart(void){
-    TRISBbits.TRISB7 = DIO_OUTPUT;
-    TRISBbits.TRISB2 = DIO_INPUT;
+    ANSBbits.ANSB2 = DIO_DIGITAL;
     ANSBbits.ANSB7 = DIO_DIGITAL;
     
-    /* baud rate = 9600bps 
-     * U1BRG = (16000000/(16*9600)) - 1 = 27.77 = 28 // 16MIPS
-     * 
+    /* baud rate = 57600bps 
+     * U1BRG = (12000000/(16*57600)) - 1 = 12.02 = 12
      */
+    U1BRG = 12;
+    U1MODE = 0x0000;    // TX/RX only, standard mode
+    U1STA = 0x0000;     // enable TX
     
     /* uart interrupts */
     IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
-    // IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
+    IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
+    
+    U1MODEbits.UARTEN = 1;
+    U1STAbits.UTXEN = 1;
     
     return;
+}
+
+void sendByte(char byte){
+    /* wait for buffers to clear */
+    while(U1STAbits.UTXBF == 1);
+    
+    U1TXREG = byte;
 }
 
 void setDutyCycleHZ1(q15_t dutyCycle){
@@ -324,4 +337,16 @@ void _ISR _ADC1Interrupt(void){
     /* clear the flag */
     IFS0bits.AD1IF = 0;
 }
+
+void _ISR _U1TXInterrupt(void){
+    
+    IFS0bits.U1TXIF = 0;
+}
+
+void _ISR _U1RXInterrupt(void){
+    U1TXREG = U1RXREG;  // echo
+    
+    IFS0bits.U1RXIF = 0;
+}
+
 
