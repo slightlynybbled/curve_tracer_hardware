@@ -7,9 +7,10 @@
 
 
 #include <xc.h>
-#include <p24FV16KM202.h>
 #include "libmathq15.h"
 #include "task.h"
+#include "uart.h"
+#include "dio.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
 // FBS
@@ -53,11 +54,6 @@
 /****************************** END CONFIGURATION *****************************/
 
 /*********** Useful defines and macros ****************************************/
-#define DIO_OUTPUT  0
-#define DIO_INPUT   1
-#define DIO_DIGITAL 0
-#define DIO_ANALOG  1
-
 #define OMEGA_MIN_TO_FAST_SINE      2000
 #define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
 
@@ -85,8 +81,6 @@ void initLowZAnalogOut(void);
 void initInterrupts(void);
 void initPwm(void);
 void initAdc(void);
-void initUart(void);
-void sendByte(char byte);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
@@ -126,8 +120,12 @@ void initLowZAnalogOut(void){
     /* Pin config:
      * according to datasheet, opamp pins
      * should be in 'analog' mode as 'inputs' */
-    TRISBbits.TRISB3 = TRISBbits.TRISB15 = TRISBbits.TRISB14 = DIO_INPUT;
-    ANSBbits.ANSB3 = ANSBbits.ANSB15 = DIO_ANALOG;
+    DIO_makeInput(DIO_PORT_B, 3);
+    DIO_makeInput(DIO_PORT_B, 15);
+    DIO_makeInput(DIO_PORT_B, 14);
+    DIO_makeAnalog(DIO_PORT_B, 3);
+    DIO_makeAnalog(DIO_PORT_B, 15);
+    
     
     /* DAC config:
      * trigger on write, DAC available to internal
@@ -164,7 +162,8 @@ void initInterrupts(void){
 
 void initPwm(void){
     // use OC1C (pin 21, RB10) and OC2A (pin 22, RB11)
-    TRISBbits.TRISB10 = TRISBbits.TRISB11 = DIO_DIGITAL;
+    DIO_makeDigital(DIO_PORT_B, 10);
+    DIO_makeDigital(DIO_PORT_B, 11);
     
     /* Initialize MCCP module
      *  */
@@ -191,16 +190,17 @@ void initPwm(void){
 
 void initAdc(void){
     /* set up the analog pins as analog inputs */
-    TRISAbits.TRISA1 = 
-            TRISBbits.TRISB0 = 
-            TRISBbits.TRISB4 =
-            TRISAbits.TRISA4 = 
-            TRISBbits.TRISB6 = DIO_INPUT;
-    ANSAbits.ANSA1 =
-            ANSBbits.ANSB0 =
-            ANSBbits.ANSB4 =
-            ANSAbits.ANSA4 =
-            ANSBbits.ANSB6 = DIO_ANALOG;
+    DIO_makeInput(DIO_PORT_A, 1);
+    DIO_makeInput(DIO_PORT_B, 0);
+    DIO_makeInput(DIO_PORT_B, 4);
+    DIO_makeInput(DIO_PORT_A, 4);
+    DIO_makeInput(DIO_PORT_B, 6);
+    
+    DIO_makeAnalog(DIO_PORT_A, 1);
+    DIO_makeAnalog(DIO_PORT_B, 0);
+    DIO_makeAnalog(DIO_PORT_B, 4);
+    DIO_makeAnalog(DIO_PORT_A, 4);
+    DIO_makeAnalog(DIO_PORT_B, 6);
     
     AD1CON1 = 0x0200;   /* Internal counter triggers conversion
                          * FORM = left justified  */
@@ -218,34 +218,6 @@ void initAdc(void){
     IEC0bits.AD1IE = 1;
     
     return;
-}
-
-void initUart(void){
-    ANSBbits.ANSB2 = DIO_DIGITAL;
-    ANSBbits.ANSB7 = DIO_DIGITAL;
-    
-    /* baud rate = 57600bps 
-     * U1BRG = (12000000/(16*57600)) - 1 = 12.02 = 12
-     */
-    U1BRG = 12;
-    U1MODE = 0x0000;    // TX/RX only, standard mode
-    U1STA = 0x0000;     // enable TX
-    
-    /* uart interrupts */
-    IFS0bits.U1TXIF = IFS0bits.U1RXIF = 0;
-    IEC0bits.U1TXIE = IEC0bits.U1RXIE = 1;
-    
-    U1MODEbits.UARTEN = 1;
-    U1STAbits.UTXEN = 1;
-    
-    return;
-}
-
-void sendByte(char byte){
-    /* wait for buffers to clear */
-    while(U1STAbits.UTXBF == 1);
-    
-    U1TXREG = byte;
 }
 
 void setDutyCycleHZ1(q15_t dutyCycle){
@@ -337,16 +309,3 @@ void _ISR _ADC1Interrupt(void){
     /* clear the flag */
     IFS0bits.AD1IF = 0;
 }
-
-void _ISR _U1TXInterrupt(void){
-    
-    IFS0bits.U1TXIF = 0;
-}
-
-void _ISR _U1RXInterrupt(void){
-    U1TXREG = U1RXREG;  // echo
-    
-    IFS0bits.U1RXIF = 0;
-}
-
-
