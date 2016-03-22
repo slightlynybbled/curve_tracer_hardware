@@ -11,6 +11,7 @@
 #include "task.h"
 #include "uart.h"
 #include "dio.h"
+#include "telemetry_core.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
 // FBS
@@ -84,10 +85,11 @@ void initAdc(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
-void txRxTest(void);
+void timedFct(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
+    /* setup the hardware */
     initOsc();
     initLowZAnalogOut();
     initInterrupts();
@@ -95,38 +97,35 @@ int main(void) {
     initAdc();
     UART_init();
     
-    TASK_init();
+    /* initialize the software layers */
+    TM_transport transport;
+    transport.read = UART_read;
+    transport.write = UART_write;
+    transport.readable = UART_readable;
+    transport.writeable = UART_writeable;
+    init_telemetry(&transport);
     
-    TASK_add(&txRxTest, 2000);
+    /* initialize the task manager */
+    TASK_init();
     
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
     setDutyCycleHZ2(8192);
+    
+    /* add necessary tasks */
+    TASK_add(&timedFct, 100);
     
     TASK_manage();
     
     return 0;
 }
 
-void txRxTest(void){
-    /* write to the UART */
-    uint8_t data[] = "this is a test\n\r";
-    uint32_t length = 16;
-    
-    UART_write(data, length);
-    
-    /* read from the UART */
-    uint32_t readable = UART_readable();
-    if(readable > 0){
-        int i = 0;
-        while(i < readable){
-            uint8_t rxData[] = {1};
-            UART_read(rxData, 1);
-            UART_write(rxData, 1);
-            i++;
-        }
-    }
+void timedFct(void){
+    static int i = 0;
+    publish_i8("foo", i);
+    i++;
 }
+
 
 void initOsc(void){
     /* for the moment, initialize the oscillator
