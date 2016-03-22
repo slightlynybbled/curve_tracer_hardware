@@ -84,6 +84,8 @@ void initAdc(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
+void txRxTest(void);
+
 /*********** Function Implementations *****************************************/
 int main(void) {
     initOsc();
@@ -91,9 +93,11 @@ int main(void) {
     initInterrupts();
     initPwm();
     initAdc();
-    initUart();
+    UART_init();
     
     TASK_init();
+    
+    TASK_add(&txRxTest, 2000);
     
     /* set the initial duty cycles */
     setDutyCycleHZ1(16384);
@@ -102,6 +106,26 @@ int main(void) {
     TASK_manage();
     
     return 0;
+}
+
+void txRxTest(void){
+    /* write to the UART */
+    uint8_t data[] = "this is a test\n\r";
+    uint32_t length = 16;
+    
+    UART_write(data, length);
+    
+    /* read from the UART */
+    uint32_t readable = UART_readable();
+    if(readable > 0){
+        int i = 0;
+        while(i < readable){
+            uint8_t rxData[] = {1};
+            UART_read(rxData, 1);
+            UART_write(rxData, 1);
+            i++;
+        }
+    }
 }
 
 void initOsc(void){

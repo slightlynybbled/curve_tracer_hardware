@@ -1,12 +1,17 @@
 #include "uart.h"
 #include "dio.h"
+#include "cbuffer.h"
 #include <xc.h>
 
-void sendByte(char byte);
+volatile static Buffer txBuf;
+volatile static Buffer rxBuf;
 
-void initUart(void){
+void UART_init(void){
     DIO_makeDigital(DIO_PORT_B, 2);
     DIO_makeDigital(DIO_PORT_B, 7);
+    
+    BUF_init((Buffer*)&txBuf);
+    BUF_init((Buffer*)&rxBuf);
     
     /* baud rate = 57600bps 
      * U1BRG = (12000000/(16*57600)) - 1 = 12.02 = 12
@@ -25,20 +30,65 @@ void initUart(void){
     return;
 }
 
-void sendByte(char byte){
-    /* wait for buffers to clear */
-    while(U1STAbits.UTXBF == 1);
+int32_t UART_read(uint8_t* data, uint32_t length){
+    uint32_t i = 0;
     
-    U1TXREG = byte;
+    while(i < length){
+        data[i] = BUF_read((Buffer*)&rxBuf);
+        i++;
+    }
+    
+    return 1;
+}
+
+int32_t UART_write(uint8_t* data, uint32_t length){
+    uint32_t i = 0;
+    
+    while(i < length){
+        BUF_write((Buffer*)&txBuf, data[i]);
+        i++;
+    }
+    
+    /* if the transmit isn't active, then kick-start the
+     * transmit; the interrupt routine will finish sending
+     * the remainder of the buffer */
+    if(U1STAbits.TRMT == 1){
+        U1TXREG = BUF_read((Buffer*)&txBuf);
+    }
+    
+    return 1;
+}
+
+int32_t UART_readable(void){
+    return (int32_t)BUF_fullSlots((Buffer*)&rxBuf);
+}
+
+int32_t UART_writeable(void){
+    return (int32_t)BUF_emptySlots((Buffer*)&txBuf);
 }
 
 void _ISR _U1TXInterrupt(void){
+    /* read the byte(s) to be transmitted from the tx circular
+     * buffer and transmit using the hardware register */
+    while((BUF_status((Buffer*)&txBuf) != BUFFER_EMPTY)
+            && (U1STAbits.UTXBF == 0)){
+        
+        U1TXREG = BUF_read((Buffer*)&txBuf);
+    }
     
     IFS0bits.U1TXIF = 0;
 }
 
 void _ISR _U1RXInterrupt(void){
-    U1TXREG = U1RXREG;  // echo
+    /* read the received byte(s) from the register and write
+     * to the rx circular buffer */
+    while((BUF_status((Buffer*)&rxBuf) != BUFFER_FULL)
+            && (U1STAbits.URXDA)){
+        BUF_write((Buffer*)&rxBuf, U1RXREG);
+    }
+    
     
     IFS0bits.U1RXIF = 0;
 }
+
+
