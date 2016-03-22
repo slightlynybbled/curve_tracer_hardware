@@ -159,7 +159,7 @@ void TMR_init(void (*functPtr)()){
 
     /* period registers */
     CCP3PRH = 0;
-    CCP3PRL = 16000;
+    CCP3PRL = 12000;
     
     CCP3CON1L = 0x0000; // timer mode
     CCP3CON1H = 0x0000;
