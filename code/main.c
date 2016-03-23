@@ -11,7 +11,6 @@
 #include "task.h"
 #include "uart.h"
 #include "dio.h"
-#include "telemetry_core.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
 // FBS
@@ -85,7 +84,7 @@ void initAdc(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
-void timedFct(void);
+void timed(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -97,14 +96,6 @@ int main(void) {
     initAdc();
     UART_init();
     
-    /* initialize the software layers */
-    TM_transport transport;
-    transport.read = UART_read;
-    transport.write = UART_write;
-    transport.readable = UART_readable;
-    transport.writeable = UART_writeable;
-    init_telemetry(&transport);
-    
     /* initialize the task manager */
     TASK_init();
     
@@ -113,19 +104,12 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    TASK_add(&timedFct, 100);
+
     
     TASK_manage();
     
     return 0;
 }
-
-void timedFct(void){
-    static int i = 0;
-    publish_i8("foo", i);
-    i++;
-}
-
 
 void initOsc(void){
     /* for the moment, initialize the oscillator
