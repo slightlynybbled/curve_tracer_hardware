@@ -28,7 +28,7 @@ void UART_init(void){
     return;
 }
 
-int32_t UART_read(void* data, uint32_t length){
+void UART_read(void* data, uint32_t length){
     uint32_t i = 0;
     uint8_t* d = (uint8_t*)data;
     
@@ -36,11 +36,9 @@ int32_t UART_read(void* data, uint32_t length){
         d[i] = BUF_read((Buffer*)&rxBuf);
         i++;
     }
-    
-    return 1;
 }
 
-int32_t UART_write(void* data, uint32_t length){
+void UART_write(void* data, uint32_t length){
     uint32_t i = 0;
     uint8_t* d = (uint8_t*)data;
     
@@ -55,16 +53,14 @@ int32_t UART_write(void* data, uint32_t length){
     if(U1STAbits.TRMT == 1){
         U1TXREG = BUF_read((Buffer*)&txBuf);
     }
-    
-    return 1;
 }
 
-int32_t UART_readable(void){
-    return (int32_t)BUF_fullSlots((Buffer*)&rxBuf);
+int16_t UART_readable(void){
+    return BUF_fullSlots((Buffer*)&rxBuf);
 }
 
-int32_t UART_writeable(void){
-    return (int32_t)BUF_emptySlots((Buffer*)&txBuf);
+int16_t UART_writeable(void){
+    return BUF_emptySlots((Buffer*)&txBuf);
 }
 
 void _ISR _U1TXInterrupt(void){

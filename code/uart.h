@@ -5,10 +5,10 @@
 
 void UART_init(void);
 
-int32_t UART_read(void* data, uint32_t length);
-int32_t UART_write(void* data, uint32_t length);
-int32_t UART_readable(void);
-int32_t UART_writeable(void);
+void UART_read(void* data, uint32_t length);
+void UART_write(void* data, uint32_t length);
+int16_t UART_readable(void);
+int16_t UART_writeable(void);
 
 #endif
 
