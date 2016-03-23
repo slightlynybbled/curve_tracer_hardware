@@ -104,11 +104,24 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-
+    TASK_add(&timed, 1000);
     
     TASK_manage();
     
     return 0;
+}
+
+void timed(void){
+    uint8_t ret = '\n';
+    uint8_t data[30];
+    
+    uint16_t length = UART_readable();
+    
+    if(length > 0){
+        UART_read(data, length);
+        UART_write(&ret, 1);
+        UART_write(data, length);
+    }
 }
 
 void initOsc(void){
