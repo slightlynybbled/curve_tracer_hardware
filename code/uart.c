@@ -2,14 +2,20 @@
 #include "cbuffer.h"
 #include <xc.h>
 
+#define TX_BUF_LENGTH       128
+#define RX_BUF_LENGTH       32
+#define BUF_WIDTH_IN_BITS   8
+
 volatile static Buffer txBuf;
 volatile static Buffer rxBuf;
+volatile static uint8_t txBufArr[TX_BUF_LENGTH];
+volatile static uint8_t rxBufArr[RX_BUF_LENGTH];
 
 void UART_init(void){
     ANSBbits.ANSB2 = ANSBbits.ANSB7 = 0;
     
-    BUF_init((Buffer*)&txBuf);
-    BUF_init((Buffer*)&rxBuf);
+    BUF_init((Buffer*)&txBuf, (uint8_t*)txBufArr, TX_BUF_LENGTH, BUF_WIDTH_IN_BITS);
+    BUF_init((Buffer*)&rxBuf, (uint8_t*)rxBufArr, RX_BUF_LENGTH, BUF_WIDTH_IN_BITS);
     
     /* baud rate = 57600bps 
      * U1BRG = (12000000/(16*57600)) - 1 = 12.02 = 12
@@ -33,7 +39,7 @@ void UART_read(void* data, uint32_t length){
     uint8_t* d = (uint8_t*)data;
     
     while(i < length){
-        d[i] = BUF_read((Buffer*)&rxBuf);
+        d[i] = BUF_read8((Buffer*)&rxBuf);
         i++;
     }
 }
@@ -43,7 +49,7 @@ void UART_write(void* data, uint32_t length){
     uint8_t* d = (uint8_t*)data;
     
     while(i < length){
-        BUF_write((Buffer*)&txBuf, d[i]);
+        BUF_write8((Buffer*)&txBuf, d[i]);
         i++;
     }
     
@@ -51,7 +57,7 @@ void UART_write(void* data, uint32_t length){
      * transmit; the interrupt routine will finish sending
      * the remainder of the buffer */
     if(U1STAbits.TRMT == 1){
-        U1TXREG = BUF_read((Buffer*)&txBuf);
+        U1TXREG = BUF_read8((Buffer*)&txBuf);
     }
 }
 
@@ -69,7 +75,7 @@ void _ISR _U1TXInterrupt(void){
     while((BUF_status((Buffer*)&txBuf) != BUFFER_EMPTY)
             && (U1STAbits.UTXBF == 0)){
         
-        U1TXREG = BUF_read((Buffer*)&txBuf);
+        U1TXREG = BUF_read8((Buffer*)&txBuf);
     }
     
     IFS0bits.U1TXIF = 0;
@@ -80,7 +86,7 @@ void _ISR _U1RXInterrupt(void){
      * to the rx circular buffer */
     while((BUF_status((Buffer*)&rxBuf) != BUFFER_FULL)
             && (U1STAbits.URXDA)){
-        BUF_write((Buffer*)&rxBuf, U1RXREG);
+        BUF_write8((Buffer*)&rxBuf, U1RXREG);
     }
     
     
