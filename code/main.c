@@ -105,7 +105,7 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    TASK_add(&timed, 1000);
+    TASK_add(&timed, 4000);
     
     TASK_manage();
     

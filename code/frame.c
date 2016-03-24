@@ -25,7 +25,7 @@ void FRM_push(uint8_t* data, uint16_t length){
     
     uint16_t check = FRM_fletcher16(data, length);
     uint8_t check0 = (uint8_t)(check & 0x00ff);
-    uint8_t check1 = (uint8_t)((check ^ 0xff00) >> 8);
+    uint8_t check1 = (uint8_t)((check & 0xff00) >> 8);
     
     /* start the frame */
     txFrame[txIndex] = SOF;
@@ -169,23 +169,22 @@ uint16_t FRM_pull(uint8_t* data){
     return length;
 }
 
-/* implementation from wikipedia: 
- * https://en.wikipedia.org/wiki/Fletcher%27s_checksum#Fletcher-16 */
-uint16_t FRM_fletcher16(uint8_t* data, size_t bytes){
-    uint16_t sum1 = 0xff, sum2 = 0xff;
-    size_t tlen;
-
-    while (bytes) {
-        tlen = bytes >= 20 ? 20 : bytes;
-        bytes -= tlen;
-        do {
-            sum2 += sum1 += *data++;
-        } while (--tlen);
-        sum1 = (sum1 & 0xff) + (sum1 >> 8);
-        sum2 = (sum2 & 0xff) + (sum2 >> 8);
+uint16_t FRM_fletcher16(uint8_t* data, size_t length){
+	uint16_t sum1 = 0x00ff;
+	uint16_t sum2 = 0x00ff;
+    
+    uint16_t i = 0;
+    while(i < length){
+        sum1 += (uint16_t)data[i];
+        sum2 += sum1;
+        i++;
     }
-    /* Second reduction step to reduce sums to 8 bits */
-    sum1 = (sum1 & 0xff) + (sum1 >> 8);
-    sum2 = (sum2 & 0xff) + (sum2 >> 8);
-    return sum2 << 8 | sum1;
+    
+	sum1 = (sum1 & 0x00ff) + (sum1 >> 8);
+	sum2 = (sum2 & 0x00ff) + (sum2 >> 8);
+    
+    uint16_t checksum = (sum2 << 8) | sum1;
+    
+	return checksum;
 }
+
