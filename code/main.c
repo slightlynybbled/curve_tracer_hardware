@@ -9,7 +9,7 @@
 #include <xc.h>
 #include "libmathq15.h"
 #include "task.h"
-#include "uart.h"
+#include "frame.h"
 #include "dio.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
@@ -94,7 +94,8 @@ int main(void) {
     initInterrupts();
     initPwm();
     initAdc();
-    UART_init();
+    
+    FRM_init();
     
     /* initialize the task manager */
     TASK_init();
@@ -112,16 +113,11 @@ int main(void) {
 }
 
 void timed(void){
-    uint8_t ret = '\n';
-    uint8_t data[30];
+    uint8_t data[] = {0,0xf7,0,0x7f,0,0xf6,6,7};
     
-    uint16_t length = UART_readable();
+    uint16_t length = 8;
     
-    if(length > 0){
-        UART_read(data, length);
-        UART_write(&ret, 1);
-        UART_write(data, length);
-    }
+    FRM_push(data, length);
 }
 
 void initOsc(void){
