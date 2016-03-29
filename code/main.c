@@ -9,7 +9,7 @@
 #include <xc.h>
 #include "libmathq15.h"
 #include "task.h"
-#include "uart.h"
+#include "frame.h"
 #include "dio.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
@@ -94,7 +94,8 @@ int main(void) {
     initInterrupts();
     initPwm();
     initAdc();
-    UART_init();
+    
+    FRM_init();
     
     /* initialize the task manager */
     TASK_init();
@@ -104,11 +105,26 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-
+    TASK_add(&timed, 4000);
     
     TASK_manage();
     
     return 0;
+}
+
+void timed(void){
+    uint8_t txData[] = {0,0xf7,0,0x7f,0,0xf6,6,7};
+    uint16_t txLength = 8;
+    
+    FRM_push(txData, txLength);
+    
+    uint8_t rxData[32];
+    uint16_t rxLength = FRM_pull(rxData);
+    if(rxLength > 0){
+        Nop();
+        Nop();
+        Nop();
+    }
 }
 
 void initOsc(void){
