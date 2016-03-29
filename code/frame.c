@@ -31,7 +31,7 @@ void FRM_push(uint8_t* data, uint16_t length){
     txFrame[txIndex] = SOF;
     txIndex++;
     
-    /* TODO: add the CRC16 value */
+    /* copy the data from data to the txFrame */
     while(i < length){
         /* add proper escape sequences */
         if((data[i] == SOF) || (data[i] == EOF) || (data[i] == ESC)){

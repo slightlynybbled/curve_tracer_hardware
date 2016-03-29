@@ -1,6 +1,7 @@
 import threading
 import serial
 import time
+import array
 
 
 class Frame(object):
@@ -16,7 +17,7 @@ class Frame(object):
             self.port = serial.Serial("COM9", baudrate=57600, timeout=0.1)
             self.port.flushInput()
             self.raw = []
-            self.messages = []
+            self.rx_messages = []
 
             thread = threading.Thread(target=self.run, args=())
             thread.daemon = True
@@ -31,7 +32,39 @@ class Frame(object):
         if self.port is not None:
             self.port.close()
 
-    def fletcher16_checksum(self, data, check_value):
+    def rx_is_available(self):
+        if len(self.rx_messages) > 0:
+            return True
+        else:
+            return False
+
+    def pull_rx_message(self):
+        msg = self.rx_messages.pop(0)
+        return msg
+
+    def push_tx_message(self, msg):
+        # start the frame
+        frame = [self.SOF]
+
+        # calc the checksum before the framing bits are added
+        checksum = self.fletcher16_checksum(msg)
+        msg.append(checksum & 0x00ff)
+        msg.append((checksum & 0xff00) >> 8)
+
+        for element in msg:
+            if element == self.SOF or element == self.EOF or element == self.ESC:
+                frame.append(self.ESC)
+                frame.append(self.ESC_XOR ^ element)
+            else:
+                frame.append(element)
+
+        frame.append(self.EOF)
+        self.port.write(bytearray(frame))
+
+        return
+
+
+    def fletcher16_checksum(self, data):
         sum1 = 0xff
         sum2 = 0xff
 
@@ -43,22 +76,12 @@ class Frame(object):
             sum2 += sum1
             sum2 &= 0xffff
 
-            print(sum1, sum2)
-
         sum1 = (sum1 & 0x00ff) + (sum1 >> 8)
         sum2 = (sum2 & 0x00ff) + (sum2 >> 8)
 
-        print(sum1, sum2)
-
         checksum = ((sum2 * 256) & 0xffff) | sum1
 
-        print('check_value: ', check_value)
-        print('checksum: ', checksum)
-
-        if checksum == check_value:
-            return True
-        else:
-            return False
+        return checksum
 
     def run(self):
         while True:
@@ -67,12 +90,10 @@ class Frame(object):
 
             # pull out the frames
             while (self.SOF in self.raw) and (self.EOF in self.raw):
-                print('\nraw: ', self.raw)
 
                 # find the SOF by removing bytes in front of it
                 while self.raw[0] != self.SOF:
-                    removed = self.raw.pop(0)
-                    print('removed: ', removed)
+                    self.raw.pop(0)
 
                 # find the EOF
                 for i, element in enumerate(self.raw):
@@ -97,19 +118,13 @@ class Frame(object):
                         message.append(element ^ self.ESC_XOR)
                         escape_flag = False
 
-                print('message w/ checksum: ', message)
                 # remove the fletcher16 checksum
                 f16_check = message.pop(-1) * 256
                 f16_check += message.pop(-1)
 
-                # TODO: calculate the checksum
-                if self.fletcher16_checksum(message, f16_check):
-                    message = []
-                else:
-                    self.messages.append(message)
-
-                print('message: ', message)
-                print('messages: ', self.messages)
+                # calculate the checksum
+                if self.fletcher16_checksum(message) == f16_check:
+                    self.rx_messages.append(message)
 
             time.sleep(0.1)
 
@@ -117,5 +132,7 @@ class Frame(object):
 if __name__ == "__main__":
     f = Frame()
     while True:
-        pass
+        msg = [0, 1, 2, 3, 4, 5, 6, 7]
+        f.push_tx_message(msg)
+        time.sleep(5.0)
 
