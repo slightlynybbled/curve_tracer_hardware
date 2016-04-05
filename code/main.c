@@ -85,6 +85,7 @@ void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
 void timed(void);
+void subscribeFunction(uint8_t* data);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -105,6 +106,9 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
+    //subscribe("foo", &subscribeFunction);
+    
+    //TASK_add(&process, 10);
     TASK_add(&timed, 4000);
     
     TASK_manage();
@@ -114,10 +118,18 @@ int main(void) {
 
 void timed(void){
     int32_t data0[] = {-3,-4};
-    int8_t data1[] = {5,6};
-    int16_t data2[] = {7,8};
+    uint32_t data1[] = {5,6};
+    int8_t data2[] = {7,8};
     
-    publish("foo", "my string");
+    //publish("foo", "my string");
+    
+    publish("bar:2,s32,u32,s8", data0, data1, data2);
+}
+
+void subscribeFunction(uint8_t* data){
+    Nop();
+    Nop();
+    Nop();
 }
 
 void initOsc(void){
