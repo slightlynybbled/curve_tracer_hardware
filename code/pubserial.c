@@ -470,7 +470,7 @@ uint16_t getCurrentMessageWidth(void){
             widthInBytes = 4;
         }
         
-        currentIndex += msg.length * msg.dimensions * widthInBytes;
+        currentIndex += msg.length * widthInBytes;
     }
     
     return currentIndex;
