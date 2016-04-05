@@ -9,7 +9,7 @@
 #include <xc.h>
 #include "libmathq15.h"
 #include "task.h"
-#include "frame.h"
+#include "pubserial.h"
 #include "dio.h"
 
 /********************* CONFIGURATION BIT SETTINGS *****************************/
@@ -95,7 +95,7 @@ int main(void) {
     initPwm();
     initAdc();
     
-    FRM_init();
+    pubserial_init();
     
     /* initialize the task manager */
     TASK_init();
@@ -113,18 +113,9 @@ int main(void) {
 }
 
 void timed(void){
-    uint8_t txData[] = {0,0xf7,0,0x7f,0,0xf6,6,7};
-    uint16_t txLength = 8;
+    int8_t data[] = {-3,-4};
     
-    FRM_push(txData, txLength);
-    
-    uint8_t rxData[32];
-    uint16_t rxLength = FRM_pull(rxData);
-    if(rxLength > 0){
-        Nop();
-        Nop();
-        Nop();
-    }
+    publish("foo:2,s8", data);
 }
 
 void initOsc(void){
