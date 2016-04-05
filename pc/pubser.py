@@ -11,14 +11,26 @@ class PubSerial(object):
 
     def __init__(self):
         self.frame = Frame()
-        self.data = {}
 
         thread = threading.Thread(target=self.run, args=())
         thread.daemon = True
         thread.start()
 
     def subscribe(self, topic, callback):
-        self.subscribers[topic] = callback
+        try:
+            self.subscribers[topic].append(callback)
+        except:
+            self.subscribers[topic] = [callback]
+
+    def unsubscribe(self, topic, callback):
+        if self.subscribers[topic]:
+            self.subscribers[topic].remove(callback)
+
+        if len(self.subscribers[topic]) == 0:
+            self.subscribers.pop(topic)
+
+    def get_data(self, topic):
+        return self.topical_data[topic]
 
     def run(self):
         while True:
@@ -54,9 +66,6 @@ class PubSerial(object):
                     i += 1
                     if i == dim:
                         break
-
-                print('________________________')
-                print(topic, dim, length, format_specifiers, msg)
 
                 for element in format_specifiers:
                     if element == 'STRING':
@@ -161,13 +170,21 @@ class PubSerial(object):
                         print('unrecognized message type')
 
                 # remove any data that doesn't have subscribers
-                print(self.topical_data)
-
                 temp_dict = copy.deepcopy(self.topical_data)
                 keys = temp_dict.keys()
                 for key in keys:
-                    print(key)
                     if key not in self.subscribers:
+                        self.topical_data.pop(key)
+
+                    else:
+                        # execute callbacks
+                        for element in self.subscribers[key]:
+                            element()
+
+                        ''' at this point, the data should have
+                        been consumed by the function and can
+                        now be discarded, which helps keep memory
+                        use low'''
                         self.topical_data.pop(key)
 
             time.sleep(0.1)
