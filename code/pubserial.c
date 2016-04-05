@@ -9,14 +9,6 @@
 #define MAX_NUM_OF_FORMAT_SPECIFIERS    4
 #define MAX_TRANSMIT_MESSAGE_LEN        128
 
-typedef struct{
-    uint8_t dimensions;
-    uint16_t length;
-    uint8_t formatSpecifiers[MAX_NUM_OF_FORMAT_SPECIFIERS];
-    
-    uint8_t data[MAX_TRANSMIT_MESSAGE_LEN];
-}Message;
-
 typedef enum formatspecifier{
     eNONE = 0,
     eSTRING = 1,
@@ -28,6 +20,15 @@ typedef enum formatspecifier{
     eS32 = 7,
     eFLOAT = 8
 }FormatSpecifier;
+
+typedef struct{
+    uint8_t dimensions;
+    uint16_t length;
+    uint32_t length8bit;
+    FormatSpecifier formatSpecifiers[MAX_NUM_OF_FORMAT_SPECIFIERS];
+    
+    uint8_t data[MAX_TRANSMIT_MESSAGE_LEN];
+}Message;
 
 /********** global variable declarations **********/
 static Message msg;
@@ -55,6 +56,7 @@ void publish(const char* t, ...){
     /* initialize the message */
     msg.dimensions = 0;
     msg.length = 0;
+    msg.length8bit = 0;
     
     uint16_t i;
     for(i = 0; i < MAX_NUM_OF_FORMAT_SPECIFIERS; i++){
@@ -108,7 +110,6 @@ void publish(const char* t, ...){
         arrIndex = 1;
     
     /* check the format specifiers */
-    FormatSpecifier fs[MAX_NUM_OF_FORMAT_SPECIFIERS] = {eNONE};
     i = 0;
     while((strIndex < len) && (i < MAX_NUM_OF_FORMAT_SPECIFIERS)){
         if(t[strIndex] == ','){
@@ -116,39 +117,39 @@ void publish(const char* t, ...){
             if(t[strIndex] == 'u'){
                 strIndex++;
                 if(t[strIndex] == '8'){
-                    fs[i] = eU8;
+                    msg.formatSpecifiers[i] = eU8;
                 }else if(t[strIndex] == '1'){
                     /* if the first digit is '1', then the next digit must
                      * be 6, so there is no need to check for it */
-                    fs[i] = eU16;
+                    msg.formatSpecifiers[i] = eU16;
                     strIndex++;
                 }else if(t[strIndex] == '3'){
                     /* if the first digit is '3', then the next digit must
                      * be 2, so there is no need to check for it */
-                    fs[i] = eU32;
+                    msg.formatSpecifiers[i] = eU32;
                     strIndex++;
                 }
             }else if(t[strIndex] == 's'){
                 strIndex++;
                 if(t[strIndex] == '8'){
-                    fs[i] = eS8;
+                    msg.formatSpecifiers[i] = eS8;
                 }else if(t[strIndex] == '1'){
                     /* if the first digit is '1', then the next digit must
                      * be 6, so there is no need to check for it */
-                    fs[i] = eS16;
+                    msg.formatSpecifiers[i] = eS16;
                     strIndex++;
                 }else if(t[strIndex] == '3'){
                     /* if the first digit is '3', then the next digit must
                      * be 2, so there is no need to check for it */
-                    fs[i] = eS32;
+                    msg.formatSpecifiers[i] = eS32;
                     strIndex++;
                 }else if(t[strIndex] == 't'){
                     /* this is the case which calls for a string to be sent */
-                    fs[i] = eSTRING;
+                    msg.formatSpecifiers[i] = eSTRING;
                     strIndex++;
                 }
             }else if(t[strIndex] == 'f'){
-                fs[i] = eFLOAT;
+                msg.formatSpecifiers[i] = eFLOAT;
             }
             strIndex++;
         }else{
@@ -162,10 +163,10 @@ void publish(const char* t, ...){
     /* at this point:
      *     1. topic stored in topic[]
      *     2. array indexes are in arrIndex0 and arrIndex1
-     *     3. format specifiers are in fs[] array */
+     *     3. format specifiers are in msg.formatSpecifiers[] array */
     i = 0;
     do{
-        switch(fs[i]){
+        switch(msg.formatSpecifiers[i]){
             /* no format specifiers means U8 */
             case eNONE:
             case eU8:
@@ -175,7 +176,7 @@ void publish(const char* t, ...){
                 break;
             }
             
-            case eU8:
+            case eS8:
             {
                 int8_t* data = va_arg(arguments, int8_t*);
                 publish_s8(topic, data, arrIndex);
@@ -184,17 +185,19 @@ void publish(const char* t, ...){
             
             case eU16:
             {
-                
-                break;
-            }
-            
-            case eU32:
-            {
-                
+                uint16_t* data = va_arg(arguments, uint16_t*);
+                publish_u16(topic, data, arrIndex);
                 break;
             }
             
             case eS16:
+            {
+                int16_t* data = va_arg(arguments, int16_t*);
+                publish_s16(topic, data, arrIndex);
+                break;
+            }
+            
+            case eU32:
             {
                 
                 break;
@@ -247,19 +250,26 @@ void publish(const char* t, ...){
     
     /* append all format specifiers */
     i = 0;
-    while(i < commaCount){
+    while(i < msg.dimensions){
         if((i & 1) == 0){
-            msgData[msgDataIndex] = fs[i] & 0x0f;
+            msgData[msgDataIndex] = msg.formatSpecifiers[i] & 0x0f;
         }else{
-            msgData[msgDataIndex++] |= ((fs[i] & 0x0f) << 4);
+            msgData[msgDataIndex++] |= ((msg.formatSpecifiers[i] & 0x0f) << 4);
         }
         
         i++;
     }
     
+    /* if the previous step results in an odd number being written, then
+     * ensure that the msgDataIndex is incremented so that the data doesn't
+     * get overwritten */
+    if(i & 1){
+        msgDataIndex++;
+    }
+    
     /* append the data */
     i = 0;
-    while(i < msg.length){
+    while(i < msg.length8bit){
         msgData[msgDataIndex++] = msg.data[i++];
     }
     
@@ -306,10 +316,11 @@ void publish_u8(const char* t, uint8_t* data, uint16_t dataLength){
      * and the length of previous entries into msg */
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
-    
-    msg.dimensions++;
+
     msg.formatSpecifiers[msg.dimensions] = eU8;
+    msg.dimensions++;
     msg.length += dataLength;
+    msg.length8bit += dataLength;
     
     for(i = 0; i < dataLength; i++){
         msg.data[i + currentIndex] = data[i];
@@ -325,9 +336,10 @@ void publish_s8(const char* t, int8_t* data, uint16_t dataLength){
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
     
-    msg.dimensions++;
     msg.formatSpecifiers[msg.dimensions] = eS8;
+    msg.dimensions++;
     msg.length += dataLength;
+    msg.length8bit += dataLength;
     
     for(i = 0; i < dataLength; i++){
         msg.data[i + currentIndex] = (uint8_t)data[i];
@@ -343,9 +355,10 @@ void publish_u16(const char* t, uint16_t* data, uint16_t dataLength){
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
     
-    msg.dimensions++;
     msg.formatSpecifiers[msg.dimensions] = eU16;
-    msg.length += dataLength << 1;
+    msg.dimensions++;
+    msg.length += dataLength;
+    msg.length8bit += (dataLength << 1);
     
     i = 0;
     uint16_t dataLength8bit = dataLength << 1;
@@ -368,9 +381,10 @@ void publish_s16(const char* t, int16_t* data, uint16_t dataLength){
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
     
-    msg.dimensions++;
     msg.formatSpecifiers[msg.dimensions] = eS16;
-    msg.length += dataLength << 1;
+    msg.dimensions++;
+    msg.length += dataLength;
+    msg.length8bit += (dataLength << 1);
     
     i = 0;
     uint16_t dataLength8bit = dataLength << 1;
@@ -393,9 +407,10 @@ void publish_u32(const char* t, uint32_t* data, uint16_t dataLength){
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
     
-    msg.dimensions++;
     msg.formatSpecifiers[msg.dimensions] = eU32;
-    msg.length += dataLength << 2;
+    msg.dimensions++;
+    msg.length += dataLength;
+    msg.length8bit += (dataLength << 2);
     
     i = 0;
     uint16_t dataLength8bit = dataLength << 2;
@@ -422,9 +437,10 @@ void publish_s32(const char* t, int32_t* data, uint16_t dataLength){
     uint16_t i = 0;
     uint16_t currentIndex = getCurrentMessageWidth();
     
-    msg.dimensions++;
     msg.formatSpecifiers[msg.dimensions] = eS32;
-    msg.length += dataLength << 2;
+    msg.dimensions++;
+    msg.length += dataLength;
+    msg.length8bit += (dataLength << 2);
     
     i = 0;
     uint16_t dataLength8bit = dataLength << 2;

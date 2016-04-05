@@ -113,9 +113,9 @@ int main(void) {
 }
 
 void timed(void){
-    int8_t data[] = {-3,-4};
+    uint16_t data[] = {3,4};
     
-    publish("foo:2,s8", data);
+    publish("foo:2,u16", data);
 }
 
 void initOsc(void){
