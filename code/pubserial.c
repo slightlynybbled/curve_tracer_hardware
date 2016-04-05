@@ -162,13 +162,23 @@ void publish(const char* t, ...){
     
     /* at this point:
      *     1. topic stored in topic[]
-     *     2. array indexes are in arrIndex0 and arrIndex1
+     *     2. array length is in msg.length
      *     3. format specifiers are in msg.formatSpecifiers[] array */
     i = 0;
     do{
         switch(msg.formatSpecifiers[i]){
             /* no format specifiers means U8 */
             case eNONE:
+            case eSTRING:
+            {
+                char* data = va_arg(arguments, char*);
+                publish_str(topic, data);
+                
+                i = commaCount;     // just in case the user supplied more than
+                                    // one format specifier (invalid)
+                break;
+            }
+            
             case eU8:
             {
                 uint8_t* data = va_arg(arguments, uint8_t*);
@@ -216,16 +226,6 @@ void publish(const char* t, ...){
                 
                 break;
             }
-            
-            case eSTRING:
-            {
-                //publish_str(topic, arg0);
-                
-                i = commaCount;
-                break;
-            }
-            
-
         }
         
         i++;
@@ -280,34 +280,17 @@ void publish(const char* t, ...){
 }
 
 void publish_str(const char* t, const char* textMsg){
-    uint16_t i = 0, j = 0;
-    
-    /* copy the topic string */
-    while(t[i] != 0){
-        msg.data[i] = t[i];
-        i++;
-    }
-    
-    i++;
-    
-    /* place the dimension, length, and format specifier */
-    /* dimension is the lower 4 bits after the topic '\0'
-     *      the upper 4 bits are reserved
-     * length is the next 16 bits
-     * format specifier is the lower 4 bits of the next byte */
-    msg.data[i++] = 0;     // dimension = 0 on string
-    
-    msg.data[i++] = 0;     // length is until '\0' on a string, so this is 0 as well
-    msg.data[i++] = 0;
-    
-    msg.data[i++] = eSTRING;   // format specifier is 'string'    
-    
     /* copy the string itself */
-    while(textMsg[j] != 0){
-        msg.data[i] = textMsg[j];
-        j++;
+    uint16_t i = 0;
+    while(textMsg[i] != 0){
+        msg.data[i] = textMsg[i];
         i++;
     }
+    
+    msg.formatSpecifiers[msg.dimensions] = eSTRING;
+    msg.dimensions = 1;
+    msg.length = msg.length8bit = i;
+    
 }
 
 void publish_u8(const char* t, uint8_t* data, uint16_t dataLength){

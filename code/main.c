@@ -117,7 +117,7 @@ void timed(void){
     int8_t data1[] = {5,6};
     int16_t data2[] = {7,8};
     
-    publish("foo:2,s32,s8,s16", data0, data1, data2);
+    publish("foo", "my string");
 }
 
 void initOsc(void){
