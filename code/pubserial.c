@@ -25,7 +25,7 @@ typedef struct{
     uint8_t dimensions;
     uint16_t length;
     uint32_t length8bit;
-    FormatSpecifier formatSpecifiers[MAX_NUM_OF_FORMAT_SPECIFIERS];
+    uint8_t formatSpecifiers[MAX_NUM_OF_FORMAT_SPECIFIERS];
     
     uint8_t data[MAX_TRANSMIT_MESSAGE_LEN];
 }Message;
@@ -40,7 +40,7 @@ void publish_s8(const char* t, int8_t* data, uint16_t dataLength);
 void publish_u16(const char* t, uint16_t* data, uint16_t dataLength);
 void publish_s16(const char* t, int16_t* data, uint16_t dataLength);
 void publish_u32(const char* t, uint32_t* data, uint16_t dataLength);
-void publish_us32(const char* t, int32_t* data, uint16_t dataLength);
+void publish_s32(const char* t, int32_t* data, uint16_t dataLength);
 
 uint16_t getCurrentMessageWidth(void);
 
@@ -83,7 +83,7 @@ void publish(const char* t, ...){
     
     /* determine if there is more of the string left to process and, if
      * there is, then process the index */
-    uint16_t arrIndex = 0;
+    msg.length = 0;
     if(strIndex < len){
         /* check for the ':' character to know if this 
          * is array or single-point processing */
@@ -101,13 +101,13 @@ void publish(const char* t, ...){
             }
             /* convert the ASCII number to an 
              * integer and save it in arrIndex0 */
-            arrIndex = (uint16_t)atol(strNum0);
+            msg.length = (uint16_t)atol(strNum0);
         }
     }
     
     /* place a minimum on the arrIndex */
-    if(arrIndex < 1)
-        arrIndex = 1;
+    if(msg.length < 1)
+        msg.length = 1;
     
     /* check the format specifiers */
     i = 0;
@@ -172,40 +172,42 @@ void publish(const char* t, ...){
             case eU8:
             {
                 uint8_t* data = va_arg(arguments, uint8_t*);
-                publish_u8(topic, data, arrIndex);
+                publish_u8(topic, data, msg.length);
                 break;
             }
             
             case eS8:
             {
                 int8_t* data = va_arg(arguments, int8_t*);
-                publish_s8(topic, data, arrIndex);
+                publish_s8(topic, data, msg.length);
                 break;
             }
             
             case eU16:
             {
                 uint16_t* data = va_arg(arguments, uint16_t*);
-                publish_u16(topic, data, arrIndex);
+                publish_u16(topic, data, msg.length);
                 break;
             }
             
             case eS16:
             {
                 int16_t* data = va_arg(arguments, int16_t*);
-                publish_s16(topic, data, arrIndex);
+                publish_s16(topic, data, msg.length);
                 break;
             }
             
             case eU32:
             {
-                
+                uint32_t* data = va_arg(arguments, uint32_t*);
+                publish_u32(topic, data, msg.length);
                 break;
             }
             
             case eS32:
             {
-                
+                int32_t* data = va_arg(arguments, int32_t*);
+                publish_s32(topic, data, msg.length);
                 break;
             }
             
@@ -319,7 +321,6 @@ void publish_u8(const char* t, uint8_t* data, uint16_t dataLength){
 
     msg.formatSpecifiers[msg.dimensions] = eU8;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += dataLength;
     
     for(i = 0; i < dataLength; i++){
@@ -338,7 +339,6 @@ void publish_s8(const char* t, int8_t* data, uint16_t dataLength){
     
     msg.formatSpecifiers[msg.dimensions] = eS8;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += dataLength;
     
     for(i = 0; i < dataLength; i++){
@@ -357,7 +357,6 @@ void publish_u16(const char* t, uint16_t* data, uint16_t dataLength){
     
     msg.formatSpecifiers[msg.dimensions] = eU16;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += (dataLength << 1);
     
     i = 0;
@@ -383,7 +382,6 @@ void publish_s16(const char* t, int16_t* data, uint16_t dataLength){
     
     msg.formatSpecifiers[msg.dimensions] = eS16;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += (dataLength << 1);
     
     i = 0;
@@ -409,7 +407,6 @@ void publish_u32(const char* t, uint32_t* data, uint16_t dataLength){
     
     msg.formatSpecifiers[msg.dimensions] = eU32;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += (dataLength << 2);
     
     i = 0;
@@ -439,7 +436,6 @@ void publish_s32(const char* t, int32_t* data, uint16_t dataLength){
     
     msg.formatSpecifiers[msg.dimensions] = eS32;
     msg.dimensions++;
-    msg.length += dataLength;
     msg.length8bit += (dataLength << 2);
     
     i = 0;
@@ -462,16 +458,19 @@ uint16_t getCurrentMessageWidth(void){
     uint16_t i = 0;
     uint16_t currentIndex = 0;
     for(i = 0; i < msg.dimensions; i++){
-        uint16_t width = 0;
-        if((msg.formatSpecifiers[i] == eNONE) || (msg.formatSpecifiers[i] == eU8) || (eS8)){
-            width = 8;
-        }else if((msg.formatSpecifiers[i] == eU16) || (msg.formatSpecifiers[i] == eS16)){
-            width = 16;
+        uint16_t widthInBytes = 0;
+        if((msg.formatSpecifiers[i] == eNONE)
+                || (msg.formatSpecifiers[i] == eU8)
+                || (msg.formatSpecifiers[i] == eS8)){
+            widthInBytes = 1;
+        }else if((msg.formatSpecifiers[i] == eU16)
+                || (msg.formatSpecifiers[i] == eS16)){
+            widthInBytes = 2;
         }else{
-            width = 32;
+            widthInBytes = 4;
         }
         
-        currentIndex += msg.length * msg.dimensions * width;
+        currentIndex += msg.length * msg.dimensions * widthInBytes;
     }
     
     return currentIndex;
