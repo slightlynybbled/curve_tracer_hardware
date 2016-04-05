@@ -1,7 +1,6 @@
 import threading
 import serial
 import time
-import array
 
 
 class Frame(object):
@@ -62,7 +61,6 @@ class Frame(object):
         self.port.write(bytearray(frame))
 
         return
-
 
     def fletcher16_checksum(self, data):
         sum1 = 0xff
