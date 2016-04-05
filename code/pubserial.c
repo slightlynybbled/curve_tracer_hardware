@@ -49,9 +49,9 @@ void pubserial_init(void){
     FRM_init();
 }
 
-void publish(const char* t, ...){
+void publish(const char* topic, ...){
     va_list arguments;
-    va_start(arguments, t);
+    va_start(arguments, topic);
     
     /* initialize the message */
     msg.dimensions = 0;
@@ -65,19 +65,19 @@ void publish(const char* t, ...){
     
     /* get the num of args by counting the commas */
     uint8_t commaCount = 0;
-    uint16_t len = strlen(t);
+    uint16_t len = strlen(topic);
     i = 0;
     while(i < len){
-        if(t[i] == ',')
+        if(topic[i] == ',')
             commaCount++;
         i++;
     }
     
     /* go through the first argument and extract the topic */
     uint16_t strIndex = 0;
-    char topic[16] = {0};
-    while((strIndex < len) && (t[strIndex] != ',') && (t[strIndex] != ':')){
-        topic[strIndex] = t[strIndex];        
+    char topicStr[16] = {0};
+    while((strIndex < len) && (topic[strIndex] != ',') && (topic[strIndex] != ':')){
+        topicStr[strIndex] = topic[strIndex];        
         strIndex++;
     }
     
@@ -87,15 +87,15 @@ void publish(const char* t, ...){
     if(strIndex < len){
         /* check for the ':' character to know if this 
          * is array or single-point processing */
-        if(t[strIndex] == ':'){
+        if(topic[strIndex] == ':'){
             strIndex++;
 
             /* find he first number to the colon command or
              * the end of the string */
             char strNum0[8] = {0};
             i = 0;
-            while((t[strIndex] != ',') && (t[strIndex] != 0)){
-                strNum0[i] = t[strIndex];
+            while((topic[strIndex] != ',') && (topic[strIndex] != 0)){
+                strNum0[i] = topic[strIndex];
                 i++;
                 strIndex++;
             }
@@ -112,43 +112,43 @@ void publish(const char* t, ...){
     /* check the format specifiers */
     i = 0;
     while((strIndex < len) && (i < MAX_NUM_OF_FORMAT_SPECIFIERS)){
-        if(t[strIndex] == ','){
+        if(topic[strIndex] == ','){
             strIndex++;
-            if(t[strIndex] == 'u'){
+            if(topic[strIndex] == 'u'){
                 strIndex++;
-                if(t[strIndex] == '8'){
+                if(topic[strIndex] == '8'){
                     msg.formatSpecifiers[i] = eU8;
-                }else if(t[strIndex] == '1'){
+                }else if(topic[strIndex] == '1'){
                     /* if the first digit is '1', then the next digit must
                      * be 6, so there is no need to check for it */
                     msg.formatSpecifiers[i] = eU16;
                     strIndex++;
-                }else if(t[strIndex] == '3'){
+                }else if(topic[strIndex] == '3'){
                     /* if the first digit is '3', then the next digit must
                      * be 2, so there is no need to check for it */
                     msg.formatSpecifiers[i] = eU32;
                     strIndex++;
                 }
-            }else if(t[strIndex] == 's'){
+            }else if(topic[strIndex] == 's'){
                 strIndex++;
-                if(t[strIndex] == '8'){
+                if(topic[strIndex] == '8'){
                     msg.formatSpecifiers[i] = eS8;
-                }else if(t[strIndex] == '1'){
+                }else if(topic[strIndex] == '1'){
                     /* if the first digit is '1', then the next digit must
                      * be 6, so there is no need to check for it */
                     msg.formatSpecifiers[i] = eS16;
                     strIndex++;
-                }else if(t[strIndex] == '3'){
+                }else if(topic[strIndex] == '3'){
                     /* if the first digit is '3', then the next digit must
                      * be 2, so there is no need to check for it */
                     msg.formatSpecifiers[i] = eS32;
                     strIndex++;
-                }else if(t[strIndex] == 't'){
+                }else if(topic[strIndex] == 't'){
                     /* this is the case which calls for a string to be sent */
                     msg.formatSpecifiers[i] = eSTRING;
                     strIndex++;
                 }
-            }else if(t[strIndex] == 'f'){
+            }else if(topic[strIndex] == 'f'){
                 msg.formatSpecifiers[i] = eFLOAT;
             }
             strIndex++;
@@ -172,7 +172,7 @@ void publish(const char* t, ...){
             case eSTRING:
             {
                 char* data = va_arg(arguments, char*);
-                publish_str(topic, data);
+                publish_str(topicStr, data);
                 
                 i = commaCount;     // just in case the user supplied more than
                                     // one format specifier (invalid)
@@ -182,42 +182,42 @@ void publish(const char* t, ...){
             case eU8:
             {
                 uint8_t* data = va_arg(arguments, uint8_t*);
-                publish_u8(topic, data, msg.length);
+                publish_u8(topicStr, data, msg.length);
                 break;
             }
             
             case eS8:
             {
                 int8_t* data = va_arg(arguments, int8_t*);
-                publish_s8(topic, data, msg.length);
+                publish_s8(topicStr, data, msg.length);
                 break;
             }
             
             case eU16:
             {
                 uint16_t* data = va_arg(arguments, uint16_t*);
-                publish_u16(topic, data, msg.length);
+                publish_u16(topicStr, data, msg.length);
                 break;
             }
             
             case eS16:
             {
                 int16_t* data = va_arg(arguments, int16_t*);
-                publish_s16(topic, data, msg.length);
+                publish_s16(topicStr, data, msg.length);
                 break;
             }
             
             case eU32:
             {
                 uint32_t* data = va_arg(arguments, uint32_t*);
-                publish_u32(topic, data, msg.length);
+                publish_u32(topicStr, data, msg.length);
                 break;
             }
             
             case eS32:
             {
                 int32_t* data = va_arg(arguments, int32_t*);
-                publish_s32(topic, data, msg.length);
+                publish_s32(topicStr, data, msg.length);
                 break;
             }
             
@@ -238,8 +238,8 @@ void publish(const char* t, ...){
     
     /* copy the topic */
     i = 0;
-    while(topic[i] != 0){
-        msgData[msgDataIndex] = topic[i];
+    while(topicStr[i] != 0){
+        msgData[msgDataIndex] = topicStr[i];
         msgDataIndex++;
         i++;
     }
@@ -458,3 +458,4 @@ uint16_t getCurrentMessageWidth(void){
     
     return currentIndex;
 }
+

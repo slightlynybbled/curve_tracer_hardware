@@ -2,6 +2,6 @@
 #define _PUB_SERIAL_H
 
 void pubserial_init(void);
-void publish(const char* t, ...);
+void publish(const char* topic, ...);
 
 #endif
