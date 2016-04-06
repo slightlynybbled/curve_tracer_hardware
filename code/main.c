@@ -106,9 +106,9 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    //subscribe("foo", &subscribeFunction);
+    subscribe("baz", &subscribeFunction);
     
-    //TASK_add(&process, 10);
+    TASK_add(&process, 10);
     TASK_add(&timed, 4000);
     
     TASK_manage();

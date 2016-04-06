@@ -516,6 +516,7 @@ void process(void){
         /* decompose the message into its constituent parts */
         while(data[i] != 0){
             topic[i] = data[i];
+            i++;
         }
 
         dataIndex = i + 1;
