@@ -6,6 +6,7 @@ import copy
 
 class PubSerial(object):
     format_specifiers = {0: 'NONE', 1: 'STRING', 2: 'U8', 3: 'S8', 4: 'U16', 5: 'S16', 6: 'U32', 7: 'S32', 8: 'FLOAT'}
+
     topical_data = {}
     subscribers = {}
 
@@ -31,6 +32,76 @@ class PubSerial(object):
 
     def get_data(self, topic):
         return self.topical_data[topic]
+
+    def publish(self, topic, format_specifier, data):
+        print('_______________________________')
+        print(topic, format_specifier, data)
+
+        # reverse the format specifier dictionary for convenience in this function
+        format_specifiers = {}
+        for key in self.format_specifiers.keys():
+            value = self.format_specifiers[key]
+            format_specifiers[value] = key
+
+        length = len(data[0])
+        dim = len(data)
+
+        msg = []
+
+        # create the header
+        topic_bytes = bytearray(topic, 'utf-8')
+        for e in topic_bytes:
+            msg.append(e)
+        msg.append(0)   # null string terminator
+
+        msg.append(dim)
+        msg.append(length & 255)
+        msg.append((length & 65280) >> 8)
+
+        for i, e in enumerate(format_specifier):
+            fs = format_specifiers[e]
+            if (i & 1) == 0:
+                msg.append(fs & 15)
+            else:
+                msg[-1] += ((fs & 15) << 4)
+
+        for i, e in enumerate(format_specifier):
+            if e == 'NONE' or e == 'STRING':
+                print('sending string')
+                str_array = bytearray(data[0][0], 'utf-8')
+                for e in str_array:
+                    msg.append(e)
+                msg.append(0)
+
+            elif e == 'U8' or e == 'S8':
+                unsigned_data8 = [x if x > 0 else x + 256 for x in data[i]]
+                msg.extend(unsigned_data8)
+
+            elif e == 'U16' or e == 'S16':
+                print('sending u16')
+
+                unsigned_data16 = [x if x > 0 else x + 65536 for x in data[i]]
+
+                for x in unsigned_data16:
+                    msg.append(x & 255)
+                    msg.append((x & 65280) >> 8)
+
+            elif e == 'U32' or e == 'S32':
+                unsigned_data32 = [x if x > 0 else x + 4294967296 for x in data[i]]
+
+                for x in unsigned_data32:
+                    msg.append(x & 255)
+                    msg.append((x & 65280) >> 8)
+                    msg.append((x & 16711680) >> 16)
+                    msg.append((x & 4278190080) >> 24)
+
+            else:
+                print('width not supported')
+
+        msg_to_send = copy.deepcopy(msg)
+        self.frame.push_tx_message(msg_to_send)
+        print(msg)
+        return msg
 
     def run(self):
         while True:
