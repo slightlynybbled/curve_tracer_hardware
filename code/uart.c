@@ -2,8 +2,6 @@
 #include "cbuffer.h"
 #include <xc.h>
 
-#define TX_BUF_LENGTH       128
-#define RX_BUF_LENGTH       32
 #define BUF_WIDTH_IN_BITS   8
 
 volatile static Buffer txBuf;
