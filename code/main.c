@@ -96,7 +96,7 @@ int main(void) {
     initPwm();
     initAdc();
     
-    pubserial_init();
+    PUB_init();
     
     /* initialize the task manager */
     TASK_init();
@@ -106,9 +106,9 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    subscribe("baz", &baz);
+    PUB_subscribe("baz", &baz);
     
-    TASK_add(&process, 10);
+    TASK_add(&PUB_process, 10);
     TASK_add(&timed, 4000);
     
     TASK_manage();
@@ -123,15 +123,15 @@ void timed(void){
     
     //publish("foo", "my string");
     
-    publish("bar:2,s32,u32,s8", data0, data1, data2);
+    PUB_publish("bar:2,s32,u32,s8", data0, data1, data2);
 }
 
 void baz(){
     uint16_t firstElement[10];
     uint8_t secondElement[10];
     
-    uint16_t lengthFirst = SUB_getElements(0, firstElement);
-    uint16_t lengthSecond = SUB_getElements(1, secondElement);
+    uint16_t lengthFirst = PUB_getElements(0, firstElement);
+    uint16_t lengthSecond = PUB_getElements(1, secondElement);
 }
 
 void initOsc(void){

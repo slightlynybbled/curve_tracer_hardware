@@ -53,12 +53,10 @@ void publish_u32(uint32_t* data, uint16_t dataLength);
 void publish_s32(int32_t* data, uint16_t dataLength);
 
 uint16_t getCurrentMessageWidth(void);
-
-
 uint16_t getCurrentRxPointerIndex(uint8_t element);
 
 /********** function implementations **********/
-void pubserial_init(void){
+void PUB_init(void){
     uint16_t i = 0;
     
     /* clear the subscriptions */
@@ -70,7 +68,7 @@ void pubserial_init(void){
     FRM_init();
 }
 
-void publish(const char* topic, ...){
+void PUB_publish(const char* topic, ...){
     va_list arguments;
     va_start(arguments, topic);
     
@@ -480,7 +478,7 @@ uint16_t getCurrentMessageWidth(void){
     return currentIndex;
 }
 
-void subscribe(const char* topic, void (*functPtr)()){
+void PUB_subscribe(const char* topic, void (*functPtr)()){
     /* find an empty subscription slot */
     uint16_t i;
     uint16_t found = 0;
@@ -504,7 +502,7 @@ void subscribe(const char* topic, void (*functPtr)()){
     }
 }
 
-void unsubscribe(void (*functPtr)()){
+void PUB_unsubscribe(void (*functPtr)()){
     /* find the required subscription slot */
     uint16_t i;
     for(i = 0; i < MAX_NUM_OF_SUBSCRIPTIONS; i++){
@@ -516,7 +514,7 @@ void unsubscribe(void (*functPtr)()){
     }
 }
 
-void process(void){
+void PUB_process(void){
     /* retrieve any messages from the framing buffer 
      * and process them appropriately */
     uint8_t data[MAX_RECEIVE_MESSAGE_LEN];
@@ -586,7 +584,7 @@ void process(void){
     }
 }
 
-uint16_t SUB_getElements(uint16_t element, void* destArray){
+uint16_t PUB_getElements(uint16_t element, void* destArray){
     uint16_t i;
     
     uint16_t currentIndex = getCurrentRxPointerIndex(element);
