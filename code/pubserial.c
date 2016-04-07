@@ -520,8 +520,7 @@ void process(void){
     /* retrieve any messages from the framing buffer 
      * and process them appropriately */
     uint8_t data[MAX_RECEIVE_MESSAGE_LEN];
-    uint16_t frameLength = FRM_pull(data);
-    if(frameLength > 0){
+    if(FRM_pull(data) > 0){
         char topic[MAX_TOPIC_STR_LEN] = {0};
         uint16_t i = 0;
         uint16_t dataIndex = 0;
