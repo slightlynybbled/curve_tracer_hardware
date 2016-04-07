@@ -85,7 +85,7 @@ void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
 void timed(void);
-void subscribeFunction(uint8_t* data);
+void baz();
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -106,7 +106,7 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    subscribe("baz", &subscribeFunction);
+    subscribe("baz", &baz);
     
     TASK_add(&process, 10);
     TASK_add(&timed, 4000);
@@ -126,10 +126,12 @@ void timed(void){
     publish("bar:2,s32,u32,s8", data0, data1, data2);
 }
 
-void subscribeFunction(uint8_t* data){
-    Nop();
-    Nop();
-    Nop();
+void baz(){
+    uint16_t firstElement[10];
+    uint8_t secondElement[10];
+    
+    uint16_t lengthFirst = SUB_getElements(0, firstElement);
+    uint16_t lengthSecond = SUB_getElements(1, secondElement);
 }
 
 void initOsc(void){

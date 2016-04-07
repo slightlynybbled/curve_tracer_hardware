@@ -35,7 +35,7 @@ typedef struct{
 
 typedef struct {
     char topic[MAX_TOPIC_STR_LEN];
-	void (*subFunctPtr)(uint8_t* data);
+	void (*subFunctPtr)();
 }Subscription;
 
 /********** global variable declarations **********/
@@ -53,6 +53,9 @@ void publish_u32(uint32_t* data, uint16_t dataLength);
 void publish_s32(int32_t* data, uint16_t dataLength);
 
 uint16_t getCurrentMessageWidth(void);
+
+
+uint16_t getCurrentRxPointerIndex(uint8_t element);
 
 /********** function implementations **********/
 void pubserial_init(void){
@@ -480,7 +483,16 @@ uint16_t getCurrentMessageWidth(void){
 void subscribe(const char* topic, void (*functPtr)()){
     /* find an empty subscription slot */
     uint16_t i;
+    uint16_t found = 0;
     for(i = 0; i < MAX_NUM_OF_SUBSCRIPTIONS; i++){
+        if(sub[i].subFunctPtr == 0){
+            found = 1;
+            break;
+        }
+    }
+    
+    /* subscribe to the 'found' slot */
+    if(found == 1){
         /* copy the function pointer and the topic */
         sub[i].subFunctPtr = functPtr;
         
@@ -508,7 +520,8 @@ void process(void){
     /* retrieve any messages from the framing buffer 
      * and process them appropriately */
     uint8_t data[MAX_RECEIVE_MESSAGE_LEN];
-    if(FRM_pull(data) > 0){
+    uint16_t frameLength = FRM_pull(data);
+    if(frameLength > 0){
         char topic[MAX_TOPIC_STR_LEN] = {0};
         uint16_t i = 0;
         uint16_t dataIndex = 0;
@@ -525,11 +538,25 @@ void process(void){
         rxMsg.length = (uint16_t)data[dataIndex++];
         rxMsg.length += ((uint16_t)data[dataIndex++]) << 8;
         
+        rxMsg.length8bit = 0;
+        
         for(i = 0; i < rxMsg.dimensions; i++){
             if((i & 1) == 0){
                 rxMsg.formatSpecifiers[i] = data[dataIndex] & 0x0f;
             }else{
                 rxMsg.formatSpecifiers[i] = (data[dataIndex++] & 0xf0) >> 4;
+            }
+            
+            if((rxMsg.formatSpecifiers[i] == eSTRING)
+                    || (rxMsg.formatSpecifiers[i] == eU8)
+                    || (rxMsg.formatSpecifiers[i] == eS8)){
+                rxMsg.length8bit += rxMsg.length;
+            }else if((rxMsg.formatSpecifiers[i] == eU16)
+                    || (rxMsg.formatSpecifiers[i] == eS16)){
+                rxMsg.length8bit += (rxMsg.length << 1);
+            }else if((rxMsg.formatSpecifiers[i] == eU32)
+                    || (rxMsg.formatSpecifiers[i] == eS32)){
+                rxMsg.length8bit += (rxMsg.length << 2);
             }
         }
         
@@ -542,15 +569,184 @@ void process(void){
         /* keep from having to re-copy the buffer */
         uint8_t* dataWithOffset = data + dataIndex;
         
+        /* copy the data to the rx array */
+        for(i = 0; i < rxMsg.length8bit; i++){
+            rxMsg.data[i] = dataWithOffset[i];
+        }
+        
         /* go through the active subscriptions and execute any
          * functions that are subscribed to the received topics */
         for(i = 0; i < MAX_NUM_OF_SUBSCRIPTIONS; i++){
             if(strcmp(topic, sub[i].topic) == 0){
                 /* execute the function if it isn't empty */
                 if(sub[i].subFunctPtr != 0){
-                    sub[i].subFunctPtr(dataWithOffset);
+                    sub[i].subFunctPtr();
                 }
             }
         }
     }
+}
+
+uint16_t SUB_getElements(uint16_t element, void* destArray){
+    uint16_t i;
+    
+    uint16_t currentIndex = getCurrentRxPointerIndex(element);
+    
+    switch(rxMsg.formatSpecifiers[element]){
+        case eNONE:
+        case eSTRING:
+        {
+            // typecast to a char
+            char* data = (char*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                data[i] = rxMsg.data[i];
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eU8:
+        {
+            // typecast to a char
+            uint8_t* data = (uint8_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                data[i] = (uint8_t)rxMsg.data[currentIndex + i];
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eS8:
+        {
+            // typecast to a char
+            int8_t* data = (int8_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                data[i] = (int8_t)rxMsg.data[currentIndex + i];
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eU16:
+        {
+            // typecast to a unsigned int
+            uint16_t* data = (uint16_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                uint16_t dataIndex = i >> 1;
+                data[dataIndex] = (uint16_t)rxMsg.data[currentIndex + i];
+                i++;
+                data[dataIndex] |= (uint16_t)rxMsg.data[currentIndex + i] << 8;
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eS16:
+        {
+            // typecast to a int
+            int16_t* data = (int16_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                uint16_t dataIndex = i >> 1;
+                data[dataIndex] = (int16_t)rxMsg.data[currentIndex + i];
+                i++;
+                data[dataIndex] |= (int16_t)rxMsg.data[currentIndex + i] << 8;
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eU32:
+        {
+            // typecast to a int
+            uint32_t* data = (uint32_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                uint16_t dataIndex = i >> 2;
+                data[dataIndex] = (uint32_t)rxMsg.data[currentIndex + i];
+                i++;
+                data[dataIndex] |= (uint32_t)rxMsg.data[currentIndex + i] << 8;
+                i++;
+                data[dataIndex] |= (uint32_t)rxMsg.data[currentIndex + i] << 16;
+                i++;
+                data[dataIndex] |= (uint32_t)rxMsg.data[currentIndex + i] << 24;
+                i++;
+            }
+            
+            break;
+        }
+        
+        case eS32:
+        {
+            // typecast to a int
+            int32_t* data = (int32_t*)destArray;
+            
+            // copy data to destination array
+            i = 0;
+            while(i < rxMsg.length8bit){
+                uint16_t dataIndex = i >> 2;
+                data[dataIndex] = (int32_t)rxMsg.data[currentIndex + i];
+                i++;
+                data[dataIndex] |= (int32_t)rxMsg.data[currentIndex + i] << 8;
+                i++;
+                data[dataIndex] |= (int32_t)rxMsg.data[currentIndex + i] << 16;
+                i++;
+                data[dataIndex] |= (int32_t)rxMsg.data[currentIndex + i] << 24;
+                i++;
+            }
+            break;
+        }
+        
+        case eFLOAT:
+        {
+            
+            break;
+        }
+    }
+    
+    return rxMsg.length;
+}
+
+uint16_t getCurrentRxPointerIndex(uint8_t element){
+    uint16_t i = 0;
+    uint16_t currentIndex = 0;
+    
+    for(i = 0; i < element; i++){
+        uint16_t widthInBytes = 0;
+        if((rxMsg.formatSpecifiers[i] == eNONE)
+                || (rxMsg.formatSpecifiers[i] == eU8)
+                || (rxMsg.formatSpecifiers[i] == eS8)){
+            widthInBytes = 1;
+        }else if((rxMsg.formatSpecifiers[i] == eU16)
+                || (rxMsg.formatSpecifiers[i] == eS16)){
+            widthInBytes = 2;
+        }else{
+            widthInBytes = 4;
+        }
+        
+        currentIndex += rxMsg.length * widthInBytes;
+    }
+    
+    return currentIndex;
 }
