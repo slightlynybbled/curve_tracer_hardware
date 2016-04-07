@@ -2,9 +2,6 @@
 #include "uart.h"
 #include <stddef.h>
 
-#define TX_FRAME_LENGTH 128
-#define RX_FRAME_LENGTH 64
-
 #define SOF 0xf7
 #define EOF 0x7f
 #define ESC 0xf6

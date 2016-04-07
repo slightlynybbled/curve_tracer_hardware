@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define TX_FRAME_LENGTH 128
+#define RX_FRAME_LENGTH 64
+
 /**
  * Must be called before any other framing operations.
  */
