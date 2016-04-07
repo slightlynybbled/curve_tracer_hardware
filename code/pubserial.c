@@ -6,12 +6,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define MAX_NUM_OF_FORMAT_SPECIFIERS    4
-#define MAX_NUM_OF_SUBSCRIPTIONS        4
-#define MAX_TOPIC_STR_LEN               16
-#define MAX_TRANSMIT_MESSAGE_LEN        64
-#define MAX_RECEIVE_MESSAGE_LEN         32
-
 typedef enum formatspecifier{
     eNONE = 0,
     eSTRING = 1,
