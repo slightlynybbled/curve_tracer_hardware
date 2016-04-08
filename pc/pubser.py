@@ -5,12 +5,14 @@ import copy
 
 
 class PubSerial(object):
+    """ Sends and receives blocks of data through a byte-aligned interface """
     format_specifiers = {0: 'NONE', 1: 'STRING', 2: 'U8', 3: 'S8', 4: 'U16', 5: 'S16', 6: 'U32', 7: 'S32', 8: 'FLOAT'}
 
     topical_data = {}
     subscribers = {}
 
     def __init__(self):
+        """ Initializes frame and threading """
         self.frame = Frame()
 
         thread = threading.Thread(target=self.run, args=())
@@ -18,12 +20,24 @@ class PubSerial(object):
         thread.start()
 
     def subscribe(self, topic, callback):
+        """ Adds a callback method to a topic
+
+        Args:
+            topic: a string representing the topic which is being subscribed to
+            callback: a function which is to be called when the topic is received
+        """
         try:
             self.subscribers[topic].append(callback)
         except:
             self.subscribers[topic] = [callback]
 
     def unsubscribe(self, topic, callback):
+        """ Removes the callback from the specified topic
+
+        Args:
+            topic: a string representing the topic which is being unsubscribed from
+            callback: a function which is being removed from the subscribed topic
+        """
         if self.subscribers[topic]:
             self.subscribers[topic].remove(callback)
 
@@ -31,11 +45,25 @@ class PubSerial(object):
             self.subscribers.pop(topic)
 
     def get_data(self, topic):
+        """ Provides a method to receive the data relevant to a topic
+
+        Args:
+            topic: the topic string
+
+        Returns:
+            The data relating to a particular topic as a list of lists
+        """
         return self.topical_data[topic]
 
     def publish(self, topic, format_specifier, data):
-        print('_______________________________')
-        print(topic, format_specifier, data)
+        """ Publishes data to a particular topic
+
+        Args:
+            topic: the topic to which to publish
+            format_specifier: a list of format specifiers
+            data: a list of lists, each internal list
+                containing a complete set of data
+        """
 
         # reverse the format specifier dictionary for convenience in this function
         format_specifiers = {}
@@ -104,6 +132,7 @@ class PubSerial(object):
         return msg
 
     def run(self):
+        """ Monitors received data and properly formats it """
         while True:
             while self.frame.rx_is_available():
                 msg = self.frame.pull_rx_message()

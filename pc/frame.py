@@ -4,6 +4,8 @@ import time
 
 
 class Frame(object):
+    """  Read/Write of serial port, framing and de-framing of data  """
+
     # some useful constants
     SOF = int(b'f7', 16)
     EOF = int(b'7f', 16)
@@ -11,6 +13,7 @@ class Frame(object):
     ESC_XOR = int(b'20', 16)
 
     def __init__(self):
+        """ Initializes the serial port and creates object threads """
         # initialize the serial port
         try:
             self.port = serial.Serial("COM9", baudrate=57600, timeout=0.1)
@@ -28,20 +31,37 @@ class Frame(object):
             print("Error accessing the serial port")
 
     def __del__(self):
+        """ Closes the serial port """
         if self.port is not None:
             self.port.close()
 
     def rx_is_available(self):
+        """ Determines if rx data is available and returns the value
+
+        Returns:
+            True if de-framed data is available to be read
+            False if otherwise
+        """
         if len(self.rx_messages) > 0:
             return True
         else:
             return False
 
     def pull_rx_message(self):
+        """ Accesses the rx message and returns it as a list
+
+        Returns:
+            the received, de-framed message as a list
+        """
         msg = self.rx_messages.pop(0)
         return msg
 
     def push_tx_message(self, msg):
+        """ Sends a message, performing all framing transparently
+
+        Args:
+            msg: a list containing the message to be sent
+        """
         # start the frame
         frame = [self.SOF]
 
@@ -63,6 +83,14 @@ class Frame(object):
         return
 
     def fletcher16_checksum(self, data):
+        """ Calculates the fletcher16 checksum on a list of data
+
+        Args:
+            data: a list of 8-bit data on which to calculate the checksum
+
+        Returns:
+            the fletcher16 checksum
+        """
         sum1 = 0xff
         sum2 = 0xff
 
@@ -82,6 +110,13 @@ class Frame(object):
         return checksum
 
     def run(self):
+        """ Represents the continually executed thread of the object
+
+        This function continually monitors the serial port and de-frames
+        the data.  When a complete frame has been received and verified,
+        it attaches the de-framed data to the outgoing que to be read.
+
+        """
         while True:
             for element in self.port.read(1000):
                 self.raw.append(element)
