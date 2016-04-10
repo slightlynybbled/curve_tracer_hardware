@@ -13,9 +13,6 @@
 #include "dio.h"
 
 /*********** Useful defines and macros ****************************************/
-#define OMEGA_MIN_TO_FAST_SINE      2000
-#define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
-
 #define LD_VOLTAGE_1_AN 0x0101
 #define LD_VOLTAGE_0_AN 0x0202
 #define HZ_VOLTAGE_1_AN 0x0f0f
@@ -23,9 +20,12 @@
 #define CURRENT_VOLTAGE_AN  0x1414
 
 #define NUM_OF_SAMPLES 64
+#define THETA_SAMPLE_PERIOD (65536/NUM_OF_SAMPLES)
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 1333;
+volatile q16angle_t theta = 0;
+volatile q16angle_t thetaSample = 0;
 
 volatile q15_t loadVoltageL = 0;
 volatile q15_t loadVoltage[NUM_OF_SAMPLES] = {0};
@@ -33,6 +33,7 @@ volatile q15_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
+volatile uint8_t txActive = 0;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -44,7 +45,6 @@ void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
 void timed(void);
-void baz();
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -65,10 +65,8 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    PUB_subscribe("baz", &baz);
-    
     TASK_add(&PUB_process, 10);
-    TASK_add(&timed, 4000);
+    TASK_add(&timed, 500);
     
     TASK_manage();
     
@@ -76,15 +74,9 @@ int main(void) {
 }
 
 void timed(void){
-    PUB_publish("vi:16,s16,s16", loadVoltage, loadCurrent);
-}
-
-void baz(){
-    uint16_t firstElement[10];
-    uint8_t secondElement[10];
-    
-    uint16_t lengthFirst = PUB_getElements(0, firstElement);
-    uint16_t lengthSecond = PUB_getElements(1, secondElement);
+    txActive = 1;
+    PUB_publish("vi:32,s16,s16", loadVoltage, loadCurrent);
+    txActive = 0;
 }
 
 void initOsc(void){
@@ -217,7 +209,6 @@ void setDutyCycleHZ2(q15_t dutyCycle){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
-    static q16angle_t theta = 0;
     static q16angle_t thetaLast = 0;
     thetaLast = theta;
     theta += omega;
@@ -229,8 +220,10 @@ void _ISR _T1Interrupt(void){
     AD1CON1bits.SAMP = 0;
     
     /* reset sampleIndex on every cycle */
-    if((thetaLast > 32768) && (theta < 32768))
+    if((thetaLast > 32768) && (theta < 32768)){
         sampleIndex = 0;
+        thetaSample = 0;
+    }
     
     return;
 }
@@ -248,7 +241,11 @@ void _ISR _ADC1Interrupt(void){
 
         case LD_VOLTAGE_0_AN:
         {
-            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+            if(theta > thetaSample){
+                if(txActive == 0)
+                    loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+            }
+            
             AD1CHS = CURRENT_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
 
@@ -257,7 +254,11 @@ void _ISR _ADC1Interrupt(void){
 
         case CURRENT_VOLTAGE_AN:
         {
-            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - hz1Voltage;
+            if(theta > thetaSample){
+                if(txActive == 0)
+                    loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - hz1Voltage;
+                thetaSample = theta + THETA_SAMPLE_PERIOD;
+            }
 
             if(++sampleIndex >= NUM_OF_SAMPLES)
                 sampleIndex = 0;
