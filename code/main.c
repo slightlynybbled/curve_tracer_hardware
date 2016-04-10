@@ -22,7 +22,7 @@
 #define HZ_VOLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES 200
+#define NUM_OF_SAMPLES 64
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 1333;
@@ -76,13 +76,7 @@ int main(void) {
 }
 
 void timed(void){
-    int32_t data0[] = {-3,-4};
-    uint32_t data1[] = {5,6};
-    int8_t data2[] = {7,8};
-    
-    //publish("foo", "my string");
-    
-    PUB_publish("bar:2,s32,u32,s8", data0, data1, data2);
+    PUB_publish("vi:16,s16,s16", loadVoltage, loadCurrent);
 }
 
 void baz(){
