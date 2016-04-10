@@ -69,10 +69,17 @@ void FRM_push(uint8_t* data, uint16_t length){
     txFrame[txIndex] = EOF;
     txIndex++;
     
-    /* wait for the UART circular buffer to clear from
-     * any currently in-progress transmissions */
-    while(UART_writeable() < txIndex);
-    UART_write(txFrame, txIndex);
+    /* only write the number of slots that can currently be written */
+    i = 0;
+    do{
+        uint16_t writeable = UART_writeable();
+        if(i + writeable > txIndex){
+            writeable = txIndex - i;
+        }
+        UART_write(txFrame, writeable);
+        i += writeable;
+        
+    }while(i < txIndex);
 }
 
 uint16_t FRM_pull(uint8_t* data){
