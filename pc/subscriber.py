@@ -132,8 +132,7 @@ if __name__ == "__main__":
 
 
 def vi_subscriber():
-    print("____________________________")
-    print('data from the first callback', ps.get_data('vi'))
+    # print('data from the first callback', ps.get_data('vi'))
     plot.remove_points()
     for i, element in enumerate(ps.get_data('vi')[0]):
         plot.plot_point((ps.get_data('vi')[0][i], ps.get_data('vi')[1][i]))
