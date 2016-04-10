@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define TX_BUF_LENGTH       128
+#define TX_BUF_LENGTH       256
 #define RX_BUF_LENGTH       32
 
 /**

@@ -47,6 +47,8 @@ void UART_write(void* data, uint32_t length){
     uint8_t* d = (uint8_t*)data;
     
     while(i < length){
+        while(UART_writeable() == 0);   // wait for any current writes to clear
+        
         BUF_write8((Buffer*)&txBuf, d[i]);
         i++;
     }
@@ -70,10 +72,12 @@ int16_t UART_writeable(void){
 void _ISR _U1TXInterrupt(void){
     /* read the byte(s) to be transmitted from the tx circular
      * buffer and transmit using the hardware register */
-    while((BUF_status((Buffer*)&txBuf) != BUFFER_EMPTY)
-            && (U1STAbits.UTXBF == 0)){
-        
-        U1TXREG = BUF_read8((Buffer*)&txBuf);
+    if(BUF_status((Buffer*)&txBuf) != BUFFER_EMPTY){
+        while((BUF_status((Buffer*)&txBuf) != BUFFER_EMPTY)
+                && (U1STAbits.UTXBF == 0)){
+
+            U1TXREG = BUF_read8((Buffer*)&txBuf);
+        }
     }
     
     IFS0bits.U1TXIF = 0;
