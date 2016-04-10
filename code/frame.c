@@ -10,6 +10,7 @@
 static uint8_t rxFrame[RX_FRAME_LENGTH];
 static uint16_t rxFrameIndex = 0;
 
+void FRM_pushByte(uint8_t data);
 uint16_t FRM_fletcher16(uint8_t* data, size_t bytes);
 
 void FRM_init(void){
@@ -17,69 +18,45 @@ void FRM_init(void){
 }
 
 void FRM_push(uint8_t* data, uint16_t length){
-    uint8_t txFrame[TX_FRAME_LENGTH];
-    int16_t i = 0, txIndex = 0;
+    int16_t i = 0;
+    uint8_t dataToSend;
     
     uint16_t check = FRM_fletcher16(data, length);
     uint8_t check0 = (uint8_t)(check & 0x00ff);
     uint8_t check1 = (uint8_t)((check & 0xff00) >> 8);
     
-    /* start the frame */
-    txFrame[txIndex] = SOF;
-    txIndex++;
+    /* wait for send buffer to clear, then write the SOF */
+    while(UART_writeable() == 0);
+    dataToSend = SOF;
+    UART_write(&dataToSend, 1);
     
     /* copy the data from data to the txFrame */
     while(i < length){
-        /* add proper escape sequences */
-        if((data[i] == SOF) || (data[i] == EOF) || (data[i] == ESC)){
-            txFrame[txIndex] = ESC;
-            txIndex++;
-            txFrame[txIndex] = data[i] ^ ESC_XOR;
-            txIndex++;
-        }else{
-            txFrame[txIndex] = data[i];
-            txIndex++;
-        }
-        
-        i++;
+        FRM_pushByte(data[i++]);
     }
     
-    /* append the checksum */
-    if((check0 == SOF) || (check0 == EOF) || (check0 == ESC)){
-        txFrame[txIndex] = ESC;
-        txIndex++;
-        txFrame[txIndex] = check0 ^ ESC_XOR;
-        txIndex++;
+    FRM_pushByte(check0);
+    FRM_pushByte(check1);
+    
+    /* wait for send buffer to clear, then write the SOF */
+    while(UART_writeable() == 0);
+    dataToSend = EOF;
+    UART_write(&dataToSend, 1);
+}
+
+void FRM_pushByte(uint8_t data){
+    /* ensure that at least two bytes can be written */
+    while(UART_writeable() < 2);
+    
+    /* add proper escape sequences */
+    if((data == SOF) || (data == EOF) || (data == ESC)){
+        uint8_t escChar = ESC;
+        uint8_t escData = data ^ ESC_XOR;
+        UART_write(&escChar, 1);
+        UART_write(&escData, 1);
     }else{
-        txFrame[txIndex] = check0;
-        txIndex++;
+        UART_write(&data, 1);
     }
-    
-    if((check1 == SOF) || (check1 == EOF) || (check1 == ESC)){
-        txFrame[txIndex] = ESC;
-        txIndex++;
-        txFrame[txIndex] = check1 ^ ESC_XOR;
-        txIndex++;
-    }else{
-        txFrame[txIndex] = check1;
-        txIndex++;
-    }
-    
-    /* end the frame */
-    txFrame[txIndex] = EOF;
-    txIndex++;
-    
-    /* only write the number of slots that can currently be written */
-    i = 0;
-    do{
-        uint16_t writeable = UART_writeable();
-        if(i + writeable > txIndex){
-            writeable = txIndex - i;
-        }
-        UART_write(txFrame, writeable);
-        i += writeable;
-        
-    }while(i < txIndex);
 }
 
 uint16_t FRM_pull(uint8_t* data){
