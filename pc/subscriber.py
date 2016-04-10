@@ -2,37 +2,46 @@ from pubser import PubSerial
 import tkinter as tk
 
 
-class Plot(tk.Canvas):
+class Plot():
 
     def __init__(self, master, x_pixels=200, y_pixels=200, xrange=1.0, yrange=1.0, grid=False):
-        tk.Canvas.__init__(self, master)
         self.width_px = x_pixels
         self.height_px = y_pixels
 
         self.x_per_pixel = xrange/x_pixels
         self.y_per_pixel = yrange/y_pixels
+        self.grid = grid
 
         self.plot = tk.Canvas(master, width=x_pixels, height=y_pixels)
         self.plot.pack()
 
+        self.draw_axes()
+        self.draw_grid()
+
+    def remove_points(self):
+        self.plot.delete('data_point')
+
+    def draw_axes(self):
         # draw the primary axes
-        x0, y0 = self.to_screen_coords(-x_pixels/2, 0)
-        x1, y1 = self.to_screen_coords(x_pixels/2, 0)
+        x0, y0 = self.to_screen_coords(-self.width_px / 2, 0)
+        x1, y1 = self.to_screen_coords(self.width_px / 2, 0)
         x_axis = self.plot.create_line(x0, y0, x1, y1)
 
-        x0, y0 = self.to_screen_coords(0, y_pixels/2)
-        x1, y1 = self.to_screen_coords(0, -y_pixels/2)
+        x0, y0 = self.to_screen_coords(0, self.height_px / 2)
+        x1, y1 = self.to_screen_coords(0, -self.height_px / 2)
         y_axis = self.plot.create_line(x0, y0, x1, y1)
 
-        if grid:
+    def draw_grid(self):
+        if self.grid:
             # create the grid
-            x_grid_interval_px = x_pixels/10
-            y_grid_interval_px = y_pixels/10
+            x_grid_interval_px = self.width_px / 10
+            y_grid_interval_px = self.height_px / 10
             dash_tuple = (1, 1)
+
             for i in range(4):
                 # top to bottom lines, right quadrants
                 grid_x = (i + 1) * x_grid_interval_px
-                grid_y = self.height_px/2
+                grid_y = self.height_px / 2
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x1, y2 = self.to_screen_coords(grid_x, -grid_y)
                 self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple)
@@ -45,7 +54,7 @@ class Plot(tk.Canvas):
                 self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple)
 
                 # left-to-right lines, upper quadrants
-                grid_x = self.width_px/2
+                grid_x = self.width_px / 2
                 grid_y = (i + 1) * y_grid_interval_px
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x2, y1 = self.to_screen_coords(-grid_x, grid_y)
@@ -84,12 +93,14 @@ class Plot(tk.Canvas):
             point_width = 2
             x, y = point
             x_screen, y_screen = self.to_screen_coords(x, y)
-            self.plot.create_oval(x_screen-point_width,
-                                  y_screen-point_width,
-                                  x_screen+point_width,
-                                  y_screen+point_width,
-                                  outline='blue',
-                                  fill='blue')
+            point = self.plot.create_oval(x_screen-point_width,
+                                          y_screen-point_width,
+                                          x_screen+point_width,
+                                          y_screen+point_width,
+                                          outline='blue',
+                                          fill='blue',
+                                          tag='data_point')
+
         else:
             point_width = 2
             x, y = point
@@ -98,23 +109,17 @@ class Plot(tk.Canvas):
             y /= self.y_per_pixel
 
             x_screen, y_screen = self.to_screen_coords(x, y)
-            self.plot.create_oval(x_screen - point_width,
-                                  y_screen - point_width,
-                                  x_screen + point_width,
-                                  y_screen + point_width,
-                                  outline='blue',
-                                  fill='blue')
+            point = self.plot.create_oval(x_screen - point_width,
+                                          y_screen - point_width,
+                                          x_screen + point_width,
+                                          y_screen + point_width,
+                                          outline='blue',
+                                          fill='blue',
+                                          tag='data_point')
 
-    def to_screen_coords(self, x, y, type='px'):
-        new_x = 0
-        new_y = 0
-
-        if type == 'px':
-            new_x = x + self.width_px/2
-            new_y = self.height_px/2 - y
-        elif type == 'standard':
-            new_x = x + self.x_range/2
-            new_y = self.y_range/2 - y
+    def to_screen_coords(self, x, y):
+        new_x = x + self.width_px/2
+        new_y = self.height_px/2 - y
 
         return new_x, new_y
 
@@ -123,12 +128,13 @@ if __name__ == "__main__":
 
     # initialize tk items for display
     root = tk.Tk()
-    plot = Plot(master=root, xrange=65536, yrange=65536)
+    plot = Plot(master=root, xrange=65536, yrange=65536, grid=True)
 
 
 def vi_subscriber():
     print("____________________________")
     print('data from the first callback', ps.get_data('vi'))
+    plot.remove_points()
     for i, element in enumerate(ps.get_data('vi')[0]):
         plot.plot_point((ps.get_data('vi')[0][i], ps.get_data('vi')[1][i]))
 
