@@ -44,7 +44,8 @@ void initAdc(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
-void timed(void);
+void sendVI(void);
+void changeOmega(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -65,18 +66,25 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
+    PUB_subscribe("omega", &changeOmega);
     TASK_add(&PUB_process, 10);
-    TASK_add(&timed, 500);
+    TASK_add(&sendVI, 500);
     
     TASK_manage();
     
     return 0;
 }
 
-void timed(void){
+void sendVI(void){
     txActive = 1;
     PUB_publish("vi:32,s16,s16", loadVoltage, loadCurrent);
     txActive = 0;
+}
+
+void changeOmega(void){
+    uint16_t newOmega;
+    PUB_getElements(0, &newOmega);
+    omega = newOmega;
 }
 
 void initOsc(void){

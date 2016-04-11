@@ -1,8 +1,44 @@
 from pubser import PubSerial
 import tkinter as tk
+from tkinter import ttk
 
 
-class Plot():
+class Application:
+    def __init__(self, master):
+        self.ps = PubSerial()
+        self.ps.subscribe('vi', self.vi_subscriber)
+
+        self.plot = Plot(master=master, xrange=65536, yrange=65536, grid=True)
+
+        cb_values = ['60', '120', '240', '480', '1k']
+        self.omega_cb = ttk.Combobox(master, values=cb_values);
+        self.omega_cb.current(0)
+        self.omega_cb.state(['!disabled','!readonly'])
+        self.omega_cb.pack()
+
+        self.set_omega_btn = tk.Button(master, text="Set Omega", command=self.change_omega)
+        self.set_omega_btn.pack()
+
+    def vi_subscriber(self):
+        # print('data from the first callback', ps.get_data('vi'))
+        self.plot.remove_points()
+        for i, element in enumerate(self.ps.get_data('vi')[0]):
+            self.plot.plot_point((self.ps.get_data('vi')[0][i], self.ps.get_data('vi')[1][i]))
+
+    def change_omega(self, event=None):
+        print('omega changed: ', self.omega_cb.get())
+        omega = int(self.omega_cb.get())
+
+        # place upper and lower limits on omega
+        if omega > 1000:
+            omega = 1000
+        elif omega < 30:
+            omega = 30
+
+        self.ps.publish('omega', ['U16'], [[omega]])
+
+
+class Plot:
 
     def __init__(self, master, x_pixels=200, y_pixels=200, xrange=1.0, yrange=1.0, grid=False):
         self.width_px = x_pixels
@@ -124,21 +160,7 @@ class Plot():
         return new_x, new_y
 
 if __name__ == "__main__":
-    ps = PubSerial()
-
     # initialize tk items for display
     root = tk.Tk()
-    plot = Plot(master=root, xrange=65536, yrange=65536, grid=True)
-
-
-def vi_subscriber():
-    # print('data from the first callback', ps.get_data('vi'))
-    plot.remove_points()
-    for i, element in enumerate(ps.get_data('vi')[0]):
-        plot.plot_point((ps.get_data('vi')[0][i], ps.get_data('vi')[1][i]))
-
-
-if __name__ == "__main__":
-    ps.subscribe('vi', vi_subscriber)
-
+    app = Application(root)
     root.mainloop()
