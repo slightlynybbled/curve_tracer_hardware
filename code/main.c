@@ -9,8 +9,9 @@
 #include "config.h"
 #include "libmathq15.h"
 #include "task.h"
-#include "pubserial.h"
+#include "dispatch.h"
 #include "dio.h"
+#include "uart.h"
 
 /*********** Useful defines and macros ****************************************/
 #define LD_VOLTAGE_1_AN 0x0101
@@ -23,13 +24,13 @@
 #define THETA_SAMPLE_PERIOD (65536/NUM_OF_SAMPLES)
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 1333;
+volatile q16angle_t omega = 60;
 volatile q16angle_t theta = 0;
 volatile q16angle_t thetaSample = 0;
 
 volatile q15_t loadVoltageL = 0;
-volatile q15_t loadVoltage[NUM_OF_SAMPLES] = {0};
-volatile q15_t loadCurrent[NUM_OF_SAMPLES] = {0};
+volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
+volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
@@ -56,7 +57,12 @@ int main(void) {
     initPwm();
     initAdc();
     
-    PUB_init();
+    UART_init();
+    DIS_init();
+    DIS_assignChannelReadable(&UART_readable);
+    DIS_assignChannelWriteable(&UART_writeable);
+    DIS_assignChannelRead(&UART_read);
+    DIS_assignChannelWrite(&UART_write);
     
     /* initialize the task manager */
     TASK_init();
@@ -66,9 +72,9 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    PUB_subscribe("omega", &changeOmega);
-    TASK_add(&PUB_process, 10);
-    TASK_add(&sendVI, 500);
+    DIS_subscribe("omega", &changeOmega);
+    TASK_add(&DIS_process, 1);
+    TASK_add(&sendVI, 250);
     
     TASK_manage();
     
@@ -77,13 +83,13 @@ int main(void) {
 
 void sendVI(void){
     txActive = 1;
-    PUB_publish("vi:32,s16,s16", loadVoltage, loadCurrent);
+    DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
     txActive = 0;
 }
 
 void changeOmega(void){
     uint16_t newOmega;
-    PUB_getElements(0, &newOmega);
+    DIS_getElements(0, &newOmega);
     omega = newOmega;
 }
 
@@ -251,7 +257,7 @@ void _ISR _ADC1Interrupt(void){
         {
             if(theta > thetaSample){
                 if(txActive == 0)
-                    loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+                    loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
             }
             
             AD1CHS = CURRENT_VOLTAGE_AN;
@@ -264,7 +270,7 @@ void _ISR _ADC1Interrupt(void){
         {
             if(theta > thetaSample){
                 if(txActive == 0)
-                    loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - hz1Voltage;
+                    loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
                 thetaSample = theta + THETA_SAMPLE_PERIOD;
             }
 
