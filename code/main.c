@@ -6,74 +6,35 @@
  */
 
 
-#include <xc.h>
+#include "config.h"
 #include "libmathq15.h"
 #include "task.h"
-#include "frame.h"
+#include "dispatch.h"
 #include "dio.h"
-
-/********************* CONFIGURATION BIT SETTINGS *****************************/
-// FBS
-#pragma config BWRP = OFF               // Boot Segment Write Protect (Disabled)
-#pragma config BSS = OFF                // Boot segment Protect (No boot program flash segment)
-
-// FGS
-#pragma config GWRP = OFF               // General Segment Write Protect (General segment may be written)
-#pragma config GCP = OFF                // General Segment Code Protect (No Protection)
-
-// FOSCSEL
-#pragma config FNOSC = PRI              // Oscillator Select (Primary Oscillator (XT, HS, EC))
-#pragma config SOSCSRC = ANA            // SOSC Source Type (Analog Mode for use with crystal)
-#pragma config LPRCSEL = LP             // LPRC Oscillator Power and Accuracy (Low Power, Low Accuracy Mode)
-#pragma config IESO = ON                // Internal External Switch Over bit (Internal External Switchover mode enabled (Two-speed Start-up enabled))
-
-// FOSC
-#pragma config POSCMOD = EC             // Primary Oscillator Configuration bits (External clock mode selected)
-#pragma config OSCIOFNC = CLKO          // CLKO Enable Configuration bit (CLKO output signal enabled)
-#pragma config POSCFREQ = HS            // Primary Oscillator Frequency Range Configuration bits (Primary oscillator/external clock input frequency greater than 8MHz)
-#pragma config SOSCSEL = SOSCHP         // SOSC Power Selection Configuration bits (Secondary Oscillator configured for high-power operation)
-#pragma config FCKSM = CSECME           // Clock Switching and Monitor Selection (Both Clock Switching and Fail-safe Clock Monitor are enabled)
-
-// FWDT
-#pragma config WDTPS = PS32768          // Watchdog Timer Postscale Select bits (1:32768)
-#pragma config FWPSA = PR128            // WDT Prescaler bit (WDT prescaler ratio of 1:128)
-#pragma config FWDTEN = ON              // Watchdog Timer Enable bits (WDT enabled in hardware)
-#pragma config WINDIS = OFF             // Windowed Watchdog Timer Disable bit (Standard WDT selected(windowed WDT disabled))
-
-// FPOR
-#pragma config BOREN = BOR3             // Brown-out Reset Enable bits (Brown-out Reset enabled in hardware, SBOREN bit disabled)
-#pragma config RETCFG = OFF             //  (Retention regulator is not available)
-#pragma config PWRTEN = ON              // Power-up Timer Enable bit (PWRT enabled)
-#pragma config I2C1SEL = PRI            // Alternate I2C1 Pin Mapping bit (Use Default SCL1/SDA1 Pins For I2C1)
-#pragma config BORV = V18               // Brown-out Reset Voltage bits (Brown-out Reset set to lowest voltage (1.8V))
-#pragma config MCLRE = ON               // MCLR Pin Enable bit (RA5 input pin disabled, MCLR pin enabled)
-
-// FICD
-#pragma config ICS = PGx3               // ICD Pin Placement Select bits (EMUC/EMUD share PGC3/PGD3)
-
-/****************************** END CONFIGURATION *****************************/
+#include "uart.h"
 
 /*********** Useful defines and macros ****************************************/
-#define OMEGA_MIN_TO_FAST_SINE      2000
-#define OMEGA_MAX_TO_NORMAL_SINE    (OMEGA_MIN_TO_FAST_SINE >> 1)
-
 #define LD_VOLTAGE_1_AN 0x0101
 #define LD_VOLTAGE_0_AN 0x0202
 #define HZ_VOLTAGE_1_AN 0x0f0f
 #define HZ_VOLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES 200
+#define NUM_OF_SAMPLES 64
+#define THETA_SAMPLE_PERIOD (65536/NUM_OF_SAMPLES)
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 1333;
+volatile q16angle_t omega = 60;
+volatile q16angle_t theta = 0;
+volatile q16angle_t thetaSample = 0;
 
 volatile q15_t loadVoltageL = 0;
-volatile q15_t loadVoltage[NUM_OF_SAMPLES] = {0};
-volatile q15_t loadCurrent[NUM_OF_SAMPLES] = {0};
+volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
+volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
+volatile uint8_t txActive = 0;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -84,7 +45,8 @@ void initAdc(void);
 void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
-void timed(void);
+void sendVI(void);
+void changeOmega(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -95,7 +57,12 @@ int main(void) {
     initPwm();
     initAdc();
     
-    FRM_init();
+    UART_init();
+    DIS_init();
+    DIS_assignChannelReadable(&UART_readable);
+    DIS_assignChannelWriteable(&UART_writeable);
+    DIS_assignChannelRead(&UART_read);
+    DIS_assignChannelWrite(&UART_write);
     
     /* initialize the task manager */
     TASK_init();
@@ -105,26 +72,25 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    TASK_add(&timed, 4000);
+    DIS_subscribe("omega", &changeOmega);
+    TASK_add(&DIS_process, 1);
+    TASK_add(&sendVI, 250);
     
     TASK_manage();
     
     return 0;
 }
 
-void timed(void){
-    uint8_t txData[] = {0,0xf7,0,0x7f,0,0xf6,6,7};
-    uint16_t txLength = 8;
-    
-    FRM_push(txData, txLength);
-    
-    uint8_t rxData[32];
-    uint16_t rxLength = FRM_pull(rxData);
-    if(rxLength > 0){
-        Nop();
-        Nop();
-        Nop();
-    }
+void sendVI(void){
+    txActive = 1;
+    DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
+    txActive = 0;
+}
+
+void changeOmega(void){
+    uint16_t newOmega;
+    DIS_getElements(0, &newOmega);
+    omega = newOmega;
 }
 
 void initOsc(void){
@@ -257,7 +223,6 @@ void setDutyCycleHZ2(q15_t dutyCycle){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
-    static q16angle_t theta = 0;
     static q16angle_t thetaLast = 0;
     thetaLast = theta;
     theta += omega;
@@ -269,8 +234,10 @@ void _ISR _T1Interrupt(void){
     AD1CON1bits.SAMP = 0;
     
     /* reset sampleIndex on every cycle */
-    if((thetaLast > 32768) && (theta < 32768))
+    if((thetaLast > 32768) && (theta < 32768)){
         sampleIndex = 0;
+        thetaSample = 0;
+    }
     
     return;
 }
@@ -288,7 +255,11 @@ void _ISR _ADC1Interrupt(void){
 
         case LD_VOLTAGE_0_AN:
         {
-            loadVoltage[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - loadVoltageL;
+            if(theta > thetaSample){
+                if(txActive == 0)
+                    loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+            }
+            
             AD1CHS = CURRENT_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
 
@@ -297,7 +268,11 @@ void _ISR _ADC1Interrupt(void){
 
         case CURRENT_VOLTAGE_AN:
         {
-            loadCurrent[sampleIndex] = (q15_t)(ADC1BUF0 >> 1) - hz1Voltage;
+            if(theta > thetaSample){
+                if(txActive == 0)
+                    loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
+                thetaSample = theta + THETA_SAMPLE_PERIOD;
+            }
 
             if(++sampleIndex >= NUM_OF_SAMPLES)
                 sampleIndex = 0;
