@@ -12,6 +12,7 @@
 #include "dispatch.h"
 #include "dio.h"
 #include "uart.h"
+#include <string.h>
 
 /*********** Useful defines and macros ****************************************/
 #define LD_VOLTAGE_1_AN 0x0101
@@ -26,15 +27,14 @@
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t omega = 60;
 volatile q16angle_t theta = 0;
-volatile q16angle_t thetaSample = 0;
 
 volatile q15_t loadVoltageL = 0;
 volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
 volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
+volatile uint8_t resetSampleIndexFlag = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
-volatile uint8_t txActive = 0;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -47,6 +47,7 @@ void setDutyCycleHZ2(q15_t dutyCycle);
 
 void sendVI(void);
 void changeOmega(void);
+void itoa10(int16_t value, char* str);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -74,7 +75,7 @@ int main(void) {
     /* add necessary tasks */
     DIS_subscribe("omega", &changeOmega);
     TASK_add(&DIS_process, 1);
-    TASK_add(&sendVI, 250);
+    TASK_add(&sendVI, 500);
     
     TASK_manage();
     
@@ -82,9 +83,16 @@ int main(void) {
 }
 
 void sendVI(void){
-    txActive = 1;
-    DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
-    txActive = 0;
+    uint8_t index[NUM_OF_SAMPLES];
+    int i = 0;
+    while(i < NUM_OF_SAMPLES){
+        index[i] = i;
+        i++;
+    }
+    
+    resetSampleIndexFlag = 1;
+    
+    DIS_publish("vi:64,s8,s8", index, loadVoltage);
 }
 
 void changeOmega(void){
@@ -235,8 +243,10 @@ void _ISR _T1Interrupt(void){
     
     /* reset sampleIndex on every cycle */
     if((thetaLast > 32768) && (theta < 32768)){
-        sampleIndex = 0;
-        thetaSample = 0;
+        if(resetSampleIndexFlag == 1){
+            sampleIndex = 0;
+            resetSampleIndexFlag = 0;
+        }
     }
     
     return;
@@ -255,10 +265,8 @@ void _ISR _ADC1Interrupt(void){
 
         case LD_VOLTAGE_0_AN:
         {
-            if(theta > thetaSample){
-                if(txActive == 0)
-                    loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
-            }
+            if(sampleIndex < NUM_OF_SAMPLES)
+                loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
             
             AD1CHS = CURRENT_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
@@ -268,14 +276,13 @@ void _ISR _ADC1Interrupt(void){
 
         case CURRENT_VOLTAGE_AN:
         {
-            if(theta > thetaSample){
-                if(txActive == 0)
-                    loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
-                thetaSample = theta + THETA_SAMPLE_PERIOD;
-            }
+            if(sampleIndex < NUM_OF_SAMPLES)
+                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
 
-            if(++sampleIndex >= NUM_OF_SAMPLES)
-                sampleIndex = 0;
+            sampleIndex++;
+            if(sampleIndex >= NUM_OF_SAMPLES){
+                sampleIndex = NUM_OF_SAMPLES;
+            }
 
             AD1CHS = HZ_VOLTAGE_1_AN;
             AD1CON1bits.SAMP = 0;
@@ -306,4 +313,88 @@ void _ISR _ADC1Interrupt(void){
     
     /* clear the flag */
     IFS0bits.AD1IF = 0;
+}
+
+void itoa10(int16_t value, char* str){
+    const uint8_t digitLookup[] = {'0', '1', '2', '3', '4',
+                                    '5', '6', '7', '8', '9'};
+    uint16_t i = 0;
+    uint8_t digitValue = 0;
+    
+    /* for now, base == 10 */
+    if(value & 0x8000){
+        /* value is negative */
+        str[i++] = '-';
+        
+        while(value < -10000){
+            value += 10000;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value < -1000){
+            value += 1000;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value < -100){
+            value += 100;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value < -10){
+            value += 10;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value < -1){
+            value += 1;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+    }else{
+        /* value is positive */
+        while(value > 10000){
+            value -= 10000;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value > 1000){
+            value -= 1000;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value > 100){
+            value -= 100;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value > 10){
+            value -= 10;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+        digitValue = 0;
+        
+        while(value > 1){
+            value -= 1;
+            digitValue += 1;
+        }
+        str[i++] = digitLookup[digitValue];
+    }
+    
+    str[i] = 0; // terminate the string
 }
