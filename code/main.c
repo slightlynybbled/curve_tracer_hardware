@@ -84,16 +84,9 @@ int main(void) {
 }
 
 void sendVI(void){
-    uint8_t index[NUM_OF_SAMPLES] = {0};
-    int i = 0;
-    while(i < NUM_OF_SAMPLES){
-        index[i] = i;
-        i++;
-    }
-    
     resetSampleIndexFlag = 1;
     
-    DIS_publish("vi:64,s8,s8", index, loadVoltage);
+    DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
 }
 
 void changeOmega(void){
