@@ -21,7 +21,7 @@
 #define HZ_VOLTAGE_2_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES 64
+#define NUM_OF_SAMPLES      64
 #define THETA_SAMPLE_PERIOD (65536/NUM_OF_SAMPLES)
 
 /*********** Variable Declarations ********************************************/
@@ -32,6 +32,7 @@ volatile q15_t loadVoltageL = 0;
 volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
 volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
+volatile uint8_t sampleEnable = 0;
 volatile uint8_t resetSampleIndexFlag = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
@@ -83,7 +84,7 @@ int main(void) {
 }
 
 void sendVI(void){
-    uint8_t index[NUM_OF_SAMPLES];
+    uint8_t index[NUM_OF_SAMPLES] = {0};
     int i = 0;
     while(i < NUM_OF_SAMPLES){
         index[i] = i;
@@ -231,9 +232,14 @@ void setDutyCycleHZ2(q15_t dutyCycle){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
-    static q16angle_t thetaLast = 0;
+    static q16angle_t thetaLast = 0, thetaLastSample;
     thetaLast = theta;
     theta += omega;
+    
+    if((theta - thetaLastSample) > THETA_SAMPLE_PERIOD){
+        sampleEnable = 1;
+        thetaLastSample += THETA_SAMPLE_PERIOD;
+    }
     
     DAC1DAT = q15_fast_sin(theta) + 32768;
     DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
@@ -265,8 +271,10 @@ void _ISR _ADC1Interrupt(void){
 
         case LD_VOLTAGE_0_AN:
         {
-            if(sampleIndex < NUM_OF_SAMPLES)
-                loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+            if(sampleEnable){
+                if(sampleIndex < NUM_OF_SAMPLES)
+                    loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+            }
             
             AD1CHS = CURRENT_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
@@ -276,12 +284,16 @@ void _ISR _ADC1Interrupt(void){
 
         case CURRENT_VOLTAGE_AN:
         {
-            if(sampleIndex < NUM_OF_SAMPLES)
-                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
+            if(sampleEnable){
+                if(sampleIndex < NUM_OF_SAMPLES)
+                    loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
 
-            sampleIndex++;
-            if(sampleIndex >= NUM_OF_SAMPLES){
-                sampleIndex = NUM_OF_SAMPLES;
+                sampleIndex++;
+                if(sampleIndex >= NUM_OF_SAMPLES){
+                    sampleIndex = NUM_OF_SAMPLES;
+                }
+                
+                sampleEnable = 0;
             }
 
             AD1CHS = HZ_VOLTAGE_1_AN;
