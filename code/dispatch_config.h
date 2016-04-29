@@ -10,9 +10,6 @@
 /** The maximum topic string length */
 #define MAX_TOPIC_STR_LEN               16
 
-/** The maximum transmission message length */
-#define MAX_TRANSMIT_MESSAGE_LEN        128
-
 /** The maximum receive message length */
 #define MAX_RECEIVE_MESSAGE_LEN         32
 
