@@ -60,11 +60,11 @@ int main(void) {
     initAdc();
     
     UART_init();
-    DIS_init();
     DIS_assignChannelReadable(&UART_readable);
     DIS_assignChannelWriteable(&UART_writeable);
     DIS_assignChannelRead(&UART_read);
     DIS_assignChannelWrite(&UART_write);
+    DIS_init();
     
     /* initialize the task manager */
     TASK_init();
