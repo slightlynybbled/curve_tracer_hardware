@@ -13,7 +13,7 @@ BufferStatus BUF_init(Buffer* b, void* arr, uint16_t length, uint8_t width){
     }
     
     if(lengthOk == 0)
-        while(1);   // programmer's trap
+        while(1);   /* programmer's trap */
         
     /* ensure that the width is 8, 16, or 32 bits */
     if(width == 8){
@@ -31,7 +31,7 @@ BufferStatus BUF_init(Buffer* b, void* arr, uint16_t length, uint8_t width){
         uint32_t* dataBuf = (uint32_t*)arr;
         b->dataPtr = dataBuf;
     }else{
-        while(1);   //programmer's trap
+        while(1);   /* programmer's trap */
     }
     
     b->dataPtr = arr;
