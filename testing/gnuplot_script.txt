@@ -1,9 +1,0 @@
-# PNG output and CSV for all plots
-set term png
-set datafile sep ','
-
-set output "data.png"
-plot "loadCurrent.csv" using 1:2 with lines title "current" ,\
-"loadVoltage.csv" using 1:2 with lines title "voltage"
-
-

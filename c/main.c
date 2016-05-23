@@ -79,7 +79,7 @@ int main(void) {
     /* add necessary tasks */
     DIS_subscribe("omega", &changeOmega);
     TASK_add(&DIS_process, 1);
-    TASK_add(&sendVI, 200);
+    TASK_add(&sendVI, 500);
     
     TASK_manage();
     
