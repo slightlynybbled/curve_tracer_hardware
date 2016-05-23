@@ -3,12 +3,12 @@ import threading
 import time
 import serial
 import serial.tools.list_ports
+import serialdispatch
 
 from shortcut_bar import ShortcutBar
 from plot4q import Plot4Q
 from status_bar import StatusBar
 from about import About
-from PyDispatch import PyDispatch
 
 
 class CurveTracer(tk.Frame):
@@ -142,7 +142,7 @@ class CurveTracer(tk.Frame):
 
             try:
                 self.port = serial.Serial(self.port_str, baudrate=self.serial_baud_rate, timeout=self.serial_update_period)
-                self.ps = PyDispatch(self.port)
+                self.ps = serialdispatch.SerialDispatch(self.port)
                 self.ps.subscribe('vi', self.vi_subscriber)
                 self.status_bar.set_port_status(True)
 
