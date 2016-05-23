@@ -51,6 +51,7 @@ void setDutyCycleHZ1(q15_t dutyCycle);
 void setDutyCycleHZ2(q15_t dutyCycle);
 
 void sendVI(void);
+void sendFreq(void);
 void changeOmega(void);
 
 /*********** Function Implementations *****************************************/
@@ -80,6 +81,7 @@ int main(void) {
     DIS_subscribe("omega", &changeOmega);
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
+    TASK_add(&sendFreq, 1000);
     
     TASK_manage();
     
@@ -93,6 +95,10 @@ void sendVI(void){
     DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
     
     xmitActive = 0;
+}
+
+void sendFreq(void){
+    DIS_publish("frequency,u16", &omega);
 }
 
 void changeOmega(void){

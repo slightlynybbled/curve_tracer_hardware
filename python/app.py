@@ -94,6 +94,12 @@ class CurveTracer(tk.Frame):
 
         self.last_comm_time = time.time()
 
+    def freq_subscriber(self):
+        num = self.ps.get_data('frequency')[0][0]
+        self.status_bar.set_freq(num)
+
+        self.last_comm_time = time.time()
+
     def monitor_dispatch(self):
 
         while True:
@@ -144,6 +150,7 @@ class CurveTracer(tk.Frame):
                 self.port = serial.Serial(self.port_str, baudrate=self.serial_baud_rate, timeout=self.serial_update_period)
                 self.ps = serialdispatch.SerialDispatch(self.port)
                 self.ps.subscribe('vi', self.vi_subscriber)
+                self.ps.subscribe('frequency', self.freq_subscriber)
                 self.status_bar.set_port_status(True)
 
             except serial.SerialException:
@@ -182,7 +189,6 @@ class CurveTracer(tk.Frame):
             if valid:
                 num = int(freq_str)
                 self.ps.publish('omega', [[num]], ['U16'])
-                self.status_bar.set_freq(num)
                 print('set frequency to {}Hz'.format(num))
                 freq_selector_window.destroy()
 
