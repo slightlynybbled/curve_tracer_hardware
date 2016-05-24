@@ -31,6 +31,7 @@ class CurveTracer(tk.Frame):
 
         self.edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.edit_menu.add_command(label='Select Serial Port...', command=self.select_port_window)
+        self.edit_menu.add_command(label='Change frequency...', command=self.select_freq)
 
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.help_menu.add_command(label='About', command=About)
