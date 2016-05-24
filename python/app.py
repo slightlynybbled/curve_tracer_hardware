@@ -192,6 +192,12 @@ class CurveTracer(tk.Frame):
                 print('set frequency to {}Hz'.format(num))
                 freq_selector_window.destroy()
 
+        def return_function(event):
+            set_freq()
+
+        # bind the 'ENTER' key to the function
+        e.bind('<Return>', return_function)
+
         btn = tk.Button(freq_selector_window, text='Set Frequency', command=set_freq)
         btn.pack(side=tk.BOTTOM)
 
