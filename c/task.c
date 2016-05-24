@@ -8,7 +8,7 @@
 #include <xc.h>
 #include "task.h"
 
-#define MAX_NUM_OF_TASKS	4
+#define MAX_NUM_OF_TASKS	6
 #define MAX_SYS_TICKS_VAL	0x7ff00000
 
 /* create structure that consists of a function pointer and period */
