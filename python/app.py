@@ -189,7 +189,7 @@ class CurveTracer(tk.Frame):
 
             if valid:
                 num = int(freq_str)
-                self.ps.publish('omega', [[num]], ['U16'])
+                self.ps.publish('frequency', [[num]], ['U16'])
                 print('set frequency to {}Hz'.format(num))
                 freq_selector_window.destroy()
 

@@ -52,7 +52,9 @@ void setDutyCycleHZ2(q15_t dutyCycle);
 
 void sendVI(void);
 void sendFreq(void);
-void changeOmega(void);
+void changeFrequency(void);
+uint16_t freqToOmega(uint16_t frequency);
+uint16_t omegaToFreq(uint16_t omega);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -78,7 +80,7 @@ int main(void) {
     setDutyCycleHZ2(8192);
     
     /* add necessary tasks */
-    DIS_subscribe("omega", &changeOmega);
+    DIS_subscribe("frequency", &changeFrequency);
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
     TASK_add(&sendFreq, 1000);
@@ -98,13 +100,25 @@ void sendVI(void){
 }
 
 void sendFreq(void){
-    DIS_publish("frequency,u16", &omega);
+    uint16_t frequency = omegaToFreq(omega);
+    DIS_publish("frequency,u16", &frequency);
 }
 
-void changeOmega(void){
-    uint16_t newOmega;
-    DIS_getElements(0, &newOmega);
-    omega = newOmega;
+void changeFrequency(void){
+    uint16_t newFrequency;
+    DIS_getElements(0, &newFrequency);
+    
+    omega = freqToOmega(newFrequency);
+}
+
+uint16_t freqToOmega(uint16_t frequency){
+    /* omega = newFrequency * 4.3 */
+    return (frequency << 2) + q15_mul(9830, frequency);
+}
+
+uint16_t omegaToFreq(uint16_t omega){
+    /* frequency = omega * 1/4.3 */
+    return q15_mul(7620, omega);
 }
 
 void initOsc(void){
