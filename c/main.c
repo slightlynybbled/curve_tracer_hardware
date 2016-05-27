@@ -17,8 +17,7 @@
 /*********** Useful defines and macros ****************************************/
 #define LD_VOLTAGE_1_AN 0x0101
 #define LD_VOLTAGE_0_AN 0x0202
-#define HZ_VOLTAGE_1_AN 0x0f0f
-#define HZ_VOLTAGE_2_AN 0x1010
+#define GATE_VOLTAGE_AN 0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
 #define NUM_OF_SAMPLES      64
@@ -31,8 +30,7 @@ volatile q15_t loadVoltageL = 0;
 volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
 volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
-volatile q15_t hz1Voltage = 0;
-volatile q15_t hz2Voltage = 0;
+volatile q15_t gateVoltage = 0;
 volatile ViMode mode = PROBE;
 volatile uint8_t xmitActive = 0;
 
@@ -281,7 +279,7 @@ void _ISR _ADC1Interrupt(void){
         {
             if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
                 LATBbits.LATB9 = 1;
-                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
+                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - 16384) >> 8);
             }
 
             sampleIndex++;
@@ -289,29 +287,15 @@ void _ISR _ADC1Interrupt(void){
                 sampleIndex = NUM_OF_SAMPLES;
             }
 
-            AD1CHS = HZ_VOLTAGE_1_AN;
+            AD1CHS = GATE_VOLTAGE_AN;
             AD1CON1bits.SAMP = 0;
 
             break;
         }
 
-        case HZ_VOLTAGE_1_AN:
+        case GATE_VOLTAGE_AN:
         {
-            hz1Voltage = (q15_t)(ADC1BUF0 >> 1);
-            
-            if(mode == TRANSISTOR){
-                AD1CHS = HZ_VOLTAGE_2_AN;
-                AD1CON1bits.SAMP = 0;
-            }else{
-                AD1CHS = LD_VOLTAGE_1_AN;
-            }
-
-            break;
-        }
-
-        case HZ_VOLTAGE_2_AN:
-        {
-            hz2Voltage = (q15_t)(ADC1BUF0 >> 1);
+            gateVoltage = (q15_t)(ADC1BUF0 >> 1);
             AD1CHS = LD_VOLTAGE_1_AN;
 
             break;
