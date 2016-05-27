@@ -89,7 +89,8 @@ int main(void) {
     
     return 0;
 }
-
+/******************************************************************************/
+/* Tasks below this line */
 void sendVI(void){
     xmitActive = 1;
     
@@ -104,6 +105,8 @@ void sendFreq(void){
     DIS_publish("frequency,u16", &frequency);
 }
 
+/******************************************************************************/
+/* Subscribers below this line */
 void changeFrequency(void){
     uint16_t newFrequency;
     DIS_getElements(0, &newFrequency);
@@ -111,6 +114,8 @@ void changeFrequency(void){
     omega = freqToOmega(newFrequency);
 }
 
+/******************************************************************************/
+/* Helper functions below this line */
 uint16_t freqToOmega(uint16_t frequency){
     /* omega = newFrequency * 4.3 */
     return (frequency << 2) + q15_mul(9830, frequency);
@@ -121,6 +126,18 @@ uint16_t omegaToFreq(uint16_t omega){
     return q15_mul(7620, omega);
 }
 
+void setDutyCyclePWM1(q15_t dutyCycle){
+    CCP1RB = q15_mul(dutyCycle, CCP1PRL);
+    return;
+}
+
+void setDutyCyclePWM2(q15_t dutyCycle){
+    CCP2RB = q15_mul(dutyCycle, CCP2PRL);
+    return;
+}
+
+/******************************************************************************/
+/* Initialization functions below this line */
 void initOsc(void){
     /* for the moment, initialize the oscillator
      * on the highest internal frequency;  this will likely
@@ -230,16 +247,8 @@ void initAdc(void){
     return;
 }
 
-void setDutyCyclePWM1(q15_t dutyCycle){
-    CCP1RB = q15_mul(dutyCycle, CCP1PRL);
-    return;
-}
-
-void setDutyCyclePWM2(q15_t dutyCycle){
-    CCP2RB = q15_mul(dutyCycle, CCP2PRL);
-    return;
-}
-
+/******************************************************************************/
+/* Interrupt functions below this line */
 /**
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
