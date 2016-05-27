@@ -61,7 +61,7 @@ class CurveTracer(tk.Frame):
         # ----------------------------
         # create the widgets within their frames
         self.shortcut_bar = ShortcutBar(self.shortcut_frame)
-        self.plot = Plot4Q(self.plot_frame, x_pixels=600, y_pixels=600, xrange=256, yrange=128, grid=True)
+        self.plot = Plot4Q(self.plot_frame, x_pixels=600, y_pixels=600, xrange=256, yrange=128, grid=True, x_axis_label_str='1.0V/div', y_axis_label_str='5mA/div')
         self.status_bar = StatusBar(self.status_frame)
 
         self.ps = None

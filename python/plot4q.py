@@ -5,7 +5,7 @@ class Plot4Q:
     DEFAULT_BG_COLOR = 'grey'
     DEFAULT_LINE_COLOR = '#39FF14'
 
-    def __init__(self, master, x_pixels=200, y_pixels=200, xrange=1.0, yrange=1.0, grid=False):
+    def __init__(self, master, x_pixels=200, y_pixels=200, xrange=1.0, yrange=1.0, grid=False, x_axis_label_str=None, y_axis_label_str=None):
         self.width_px = x_pixels
         self.height_px = y_pixels
 
@@ -18,6 +18,9 @@ class Plot4Q:
 
         self.draw_axes()
         self.draw_grid()
+
+        self.label_x_axis(x_axis_label_str)
+        self.label_y_axis(y_axis_label_str)
 
     def remove_points(self):
         self.plot.delete('data_point')
@@ -70,6 +73,18 @@ class Plot4Q:
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x2, y1 = self.to_screen_coords(-grid_x, grid_y)
                 self.plot.create_line(x1, y1, x2, y1, dash=dash_tuple)
+
+    def label_x_axis(self, label):
+        if label:
+            self.plot.create_text((self.width_px, (self.height_px/2)+5), text=label, anchor=tk.NE)
+        else:
+            pass
+
+    def label_y_axis(self, label):
+        if label:
+            self.plot.create_text((self.width_px/2 + 5, 5), text=label, anchor=tk.NW)
+        else:
+            pass
 
     def plot_line(self, first_point, second_point, point_format=None, fill=None):
         if not fill:
