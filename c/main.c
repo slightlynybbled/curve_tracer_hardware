@@ -21,16 +21,19 @@
 #define CURRENT_VOLTAGE_AN  0x1414
 
 #define NUM_OF_SAMPLES      64
-#define THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
+#define HIGH_SPEED_THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
 typedef enum vimode{PROBE, TRANSISTOR}ViMode;
 
 /*********** Variable Declarations ********************************************/
+volatile q16angle_t theta = 0, omega = HIGH_SPEED_THETA_INCREMENT;
 volatile q15_t loadVoltageL = 0;
 volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
 volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
-volatile q15_t sampleIndex = 0;
 volatile q15_t gateVoltage = 0;
+volatile q15_t sampleIndex = 0;
+volatile q15_t dacSamplesPerAdcSamples = 1;
+
 volatile ViMode mode = PROBE;
 volatile uint8_t xmitActive = 0;
 
@@ -91,15 +94,34 @@ void sendVI(void){
 }
 
 void sendPeriod(void){
-    DIS_publish("period,u16", &PR1);
+    uint16_t period = PR1;
+    
+    int i = 1;
+    do{
+        period <<= 1;
+        i++;
+    }while(i < dacSamplesPerAdcSamples);
+    
+    DIS_publish("period,u16", &period);
 }
 
 /******************************************************************************/
 /* Subscribers below this line */
 void changePeriod(void){
     uint16_t newPeriod;
+    q16angle_t newOmega = HIGH_SPEED_THETA_INCREMENT;
+    dacSamplesPerAdcSamples = 1;
+    
     DIS_getElements(0, &newPeriod);
     
+    while(newPeriod > 1000){
+        newPeriod >>= 1;
+        newOmega >>= 1;
+        dacSamplesPerAdcSamples++;
+    }
+    
+    omega = newOmega;
+    theta = 0;
     PR1 = newPeriod;
 }
 
@@ -132,7 +154,6 @@ void initLowZAnalogOut(void){
     DIO_makeAnalog(DIO_PORT_B, 3);
     DIO_makeInput(DIO_PORT_B, 15);
     DIO_makeAnalog(DIO_PORT_B, 15);
-    
     
     /* DAC config:
      * trigger on write, DAC available to internal
@@ -232,8 +253,7 @@ void initAdc(void){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
-    static q16angle_t theta = 0;
-    theta += THETA_INCREMENT;
+    theta += omega;
     
     /* use the attenuation factor to keep the sine from saturating near the
      * peaks and troughs of the sine wave */
