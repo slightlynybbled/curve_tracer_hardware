@@ -235,8 +235,12 @@ void _ISR _T1Interrupt(void){
     static q16angle_t theta = 0;
     theta += THETA_INCREMENT;
     
-    DAC1DAT = q15_fast_sin(theta) + 32768;
-    DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
+    /* use the attenuation factor to keep the sine from saturating near the
+     * peaks and troughs of the sine wave */
+    const q15_t sine_attenuation_factor = 30000;
+    
+    DAC1DAT = (uint16_t)q15_mul(sine_attenuation_factor, q15_fast_sin(theta)) + 32768;
+    DAC2DAT = (uint16_t)q15_mul(sine_attenuation_factor, q15_fast_sin(theta + 32768)) + 32768; // theta + 180 deg
     
     IFS0bits.T1IF = 0;
     AD1CON1bits.SAMP = 0;
