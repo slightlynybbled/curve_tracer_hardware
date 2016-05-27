@@ -132,18 +132,24 @@ void initOsc(void){
 
 void initLowZAnalogOut(void){
     /* both DACs must be initialized, connected to external pins */
-    DIO_makeInput(DIO_PORT_B, 14);
-    DIO_makeAnalog(DIO_PORT_B, 14);
-    DIO_makeInput(DIO_PORT_B, 12);
-    DIO_makeAnalog(DIO_PORT_B, 12);
+    DIO_makeInput(DIO_PORT_B, 3);
+    DIO_makeAnalog(DIO_PORT_B, 3);
+    DIO_makeInput(DIO_PORT_B, 15);
+    DIO_makeAnalog(DIO_PORT_B, 15);
     
     
     /* DAC config:
-     * trigger on write, DAC available to pin,
-     * sleep behavior doesn't matter,
+     * trigger on write, DAC available to internal
+     * peripherals only, sleep behavior doesn't matter,
      * left-aligned input (fractional) */
-    DAC1CON = DAC2CON = 0x0882;
+    DAC1CON = DAC2CON = 0x0802;
     DAC1CONbits.DACEN = DAC2CONbits.DACEN = 1; // enable after configured
+    
+    /* Opamp config:
+     * higher bandwidth/response, voltage follower config,
+     * positive input connected to DAC */
+    AMP1CON = AMP2CON = 0x002D;
+    AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
     
     return;
 }
