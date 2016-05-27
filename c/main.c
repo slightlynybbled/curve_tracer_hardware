@@ -47,8 +47,8 @@ void initLowZAnalogOut(void);
 void initInterrupts(void);
 void initPwm(void);
 void initAdc(void);
-void setDutyCycleHZ1(q15_t dutyCycle);
-void setDutyCycleHZ2(q15_t dutyCycle);
+void setDutyCyclePWM1(q15_t dutyCycle);
+void setDutyCyclePWM2(q15_t dutyCycle);
 
 void sendVI(void);
 void sendFreq(void);
@@ -76,8 +76,8 @@ int main(void) {
     TASK_init();
     
     /* set the initial duty cycles */
-    setDutyCycleHZ1(16384);
-    setDutyCycleHZ2(8192);
+    setDutyCyclePWM1(16384);
+    setDutyCyclePWM2(8192);
     
     /* add necessary tasks */
     DIS_subscribe("frequency", &changeFrequency);
@@ -131,32 +131,19 @@ void initOsc(void){
 }
 
 void initLowZAnalogOut(void){
-    /* both DACs must be initialized, but do not
-     * need to be connected to external pins */
-    
-    /* Pin config:
-     * according to datasheet, opamp pins
-     * should be in 'analog' mode as 'inputs' */
-    DIO_makeInput(DIO_PORT_B, 3);
-    DIO_makeInput(DIO_PORT_B, 15);
+    /* both DACs must be initialized, connected to external pins */
     DIO_makeInput(DIO_PORT_B, 14);
-    DIO_makeAnalog(DIO_PORT_B, 3);
-    DIO_makeAnalog(DIO_PORT_B, 15);
+    DIO_makeAnalog(DIO_PORT_B, 14);
+    DIO_makeInput(DIO_PORT_B, 12);
+    DIO_makeAnalog(DIO_PORT_B, 12);
     
     
     /* DAC config:
-     * trigger on write, DAC available to internal
-     * peripherals only, sleep behavior doesn't matter,
+     * trigger on write, DAC available to pin,
+     * sleep behavior doesn't matter,
      * left-aligned input (fractional) */
-    DAC1CON = DAC2CON = 0x0802;
-    //DAC1CONbits.DACOE = DAC2CONbits.DACOE = 1;
+    DAC1CON = DAC2CON = 0x0882;
     DAC1CONbits.DACEN = DAC2CONbits.DACEN = 1; // enable after configured
-    
-    /* Opamp config:
-     * higher bandwidth/response, voltage follower config,
-     * positive input connected to DAC */
-    AMP1CON = AMP2CON = 0x002D;
-    AMP1CONbits.AMPEN = AMP2CONbits.AMPEN = 1;
     
     return;
 }
@@ -237,12 +224,12 @@ void initAdc(void){
     return;
 }
 
-void setDutyCycleHZ1(q15_t dutyCycle){
+void setDutyCyclePWM1(q15_t dutyCycle){
     CCP1RB = q15_mul(dutyCycle, CCP1PRL);
     return;
 }
 
-void setDutyCycleHZ2(q15_t dutyCycle){
+void setDutyCyclePWM2(q15_t dutyCycle){
     CCP2RB = q15_mul(dutyCycle, CCP2PRL);
     return;
 }

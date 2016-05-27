@@ -13,6 +13,8 @@ volatile static uint8_t readLock = 0;
 
 void UART_init(void){
     ANSBbits.ANSB2 = ANSBbits.ANSB7 = 0;
+    TRISBbits.TRISB2 = 1;
+    TRISBbits.TRISB7 = 0;
     
     BUF_init((Buffer*)&txBuf, (uint8_t*)txBufArr, TX_BUF_LENGTH, BUF_WIDTH_IN_BITS);
     BUF_init((Buffer*)&rxBuf, (uint8_t*)rxBufArr, RX_BUF_LENGTH, BUF_WIDTH_IN_BITS);
