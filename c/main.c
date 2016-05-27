@@ -22,20 +22,15 @@
 #define CURRENT_VOLTAGE_AN  0x1414
 
 #define NUM_OF_SAMPLES      64
-#define THETA_SAMPLE_PERIOD (65536/NUM_OF_SAMPLES)
+#define THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
 typedef enum vimode{PROBE, TRANSISTOR}ViMode;
 
 /*********** Variable Declarations ********************************************/
-volatile q16angle_t omega = 60;
-volatile q16angle_t theta = 0;
-
 volatile q15_t loadVoltageL = 0;
 volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
 volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t sampleIndex = 0;
-volatile uint8_t sampleEnable = 0;
-volatile uint8_t resetSampleIndexFlag = 0;
 volatile q15_t hz1Voltage = 0;
 volatile q15_t hz2Voltage = 0;
 volatile ViMode mode = PROBE;
@@ -51,10 +46,8 @@ void setDutyCyclePWM1(q15_t dutyCycle);
 void setDutyCyclePWM2(q15_t dutyCycle);
 
 void sendVI(void);
-void sendFreq(void);
-void changeFrequency(void);
-uint16_t freqToOmega(uint16_t frequency);
-uint16_t omegaToFreq(uint16_t omega);
+void sendPeriod(void);
+void changePeriod(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -64,6 +57,8 @@ int main(void) {
     initInterrupts();
     initPwm();
     initAdc();
+    
+    DIO_makeOutput(DIO_PORT_B, 9);  /* use for debugging */
     
     UART_init();
     DIS_assignChannelReadable(&UART_readable);
@@ -80,10 +75,10 @@ int main(void) {
     setDutyCyclePWM2(8192);
     
     /* add necessary tasks */
-    DIS_subscribe("frequency", &changeFrequency);
+    DIS_subscribe("period", &changePeriod);
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
-    TASK_add(&sendFreq, 1000);
+    TASK_add(&sendPeriod, 1000);
     
     TASK_manage();
     
@@ -93,39 +88,25 @@ int main(void) {
 /* Tasks below this line */
 void sendVI(void){
     xmitActive = 1;
-    
-    resetSampleIndexFlag = 1;
     DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
-    
     xmitActive = 0;
 }
 
-void sendFreq(void){
-    uint16_t frequency = omegaToFreq(omega);
-    DIS_publish("frequency,u16", &frequency);
+void sendPeriod(void){
+    DIS_publish("period,u16", &PR1);
 }
 
 /******************************************************************************/
 /* Subscribers below this line */
-void changeFrequency(void){
-    uint16_t newFrequency;
-    DIS_getElements(0, &newFrequency);
+void changePeriod(void){
+    uint16_t newPeriod;
+    DIS_getElements(0, &newPeriod);
     
-    omega = freqToOmega(newFrequency);
+    PR1 = newPeriod;
 }
 
 /******************************************************************************/
 /* Helper functions below this line */
-uint16_t freqToOmega(uint16_t frequency){
-    /* omega = newFrequency * 4.3 */
-    return (frequency << 2) + q15_mul(9830, frequency);
-}
-
-uint16_t omegaToFreq(uint16_t omega){
-    /* frequency = omega * 1/4.3 */
-    return q15_mul(7620, omega);
-}
-
 void setDutyCyclePWM1(q15_t dutyCycle){
     CCP1RB = q15_mul(dutyCycle, CCP1PRL);
     return;
@@ -179,7 +160,7 @@ void initInterrupts(void){
     
     /* timer interrupts */
     T1CON = 0x0000;
-    PR1 = 1000;          // based on 12MIPS, 48samples/waveform, 1kHz waveform
+    PR1 = 1000;
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
@@ -253,14 +234,8 @@ void initAdc(void){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
-    static q16angle_t thetaLast = 0, thetaLastSample;
-    thetaLast = theta;
-    theta += omega;
-    
-    if((theta - thetaLastSample) > THETA_SAMPLE_PERIOD){
-        sampleEnable = 1;
-        thetaLastSample += THETA_SAMPLE_PERIOD;
-    }
+    static q16angle_t theta = 0;
+    theta += THETA_INCREMENT;
     
     DAC1DAT = q15_fast_sin(theta) + 32768;
     DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
@@ -269,10 +244,9 @@ void _ISR _T1Interrupt(void){
     AD1CON1bits.SAMP = 0;
     
     /* reset sampleIndex on every cycle */
-    if((thetaLast > 32768) && (theta < 32768)){
-        if((resetSampleIndexFlag == 1) && (xmitActive == 0)){
+    if(theta == 0){
+        if(xmitActive == 0){
             sampleIndex = 0;
-            resetSampleIndexFlag = 0;
         }
     }
     
@@ -292,9 +266,9 @@ void _ISR _ADC1Interrupt(void){
 
         case LD_VOLTAGE_0_AN:
         {
-            if(sampleEnable){
-                if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0))
-                    loadVoltage[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+            if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
+                int8_t sample = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+                loadVoltage[sampleIndex] = sample;
             }
             
             AD1CHS = CURRENT_VOLTAGE_AN;
@@ -305,16 +279,14 @@ void _ISR _ADC1Interrupt(void){
 
         case CURRENT_VOLTAGE_AN:
         {
-            if(sampleEnable){
-                if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0))
-                    loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
+            if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
+                LATBbits.LATB9 = 1;
+                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - hz1Voltage) >> 8);
+            }
 
-                sampleIndex++;
-                if(sampleIndex >= NUM_OF_SAMPLES){
-                    sampleIndex = NUM_OF_SAMPLES;
-                }
-                
-                sampleEnable = 0;
+            sampleIndex++;
+            if(sampleIndex >= NUM_OF_SAMPLES){
+                sampleIndex = NUM_OF_SAMPLES;
             }
 
             AD1CHS = HZ_VOLTAGE_1_AN;
@@ -350,5 +322,6 @@ void _ISR _ADC1Interrupt(void){
     
     /* clear the flag */
     IFS0bits.AD1IF = 0;
+    LATBbits.LATB9 = 0;
 }
 

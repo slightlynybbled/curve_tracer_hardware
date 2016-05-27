@@ -19,6 +19,11 @@ class CurveTracer(tk.Frame):
     port_str = ''
     port = serial.Serial(None)
 
+    instructions_per_second = 12000000.0
+    samples_per_waveform = 64
+    min_freq = 3
+    max_freq = 188
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -95,9 +100,11 @@ class CurveTracer(tk.Frame):
 
         self.last_comm_time = time.time()
 
-    def freq_subscriber(self):
-        num = self.ps.get_data('frequency')[0][0]
-        self.status_bar.set_freq(num)
+    def period_subscriber(self):
+        period_in_cycles = self.ps.get_data('period')[0][0]
+        frequency = int(self.instructions_per_second/(self.samples_per_waveform * period_in_cycles) + 0.5)
+
+        self.status_bar.set_freq(frequency)
 
         self.last_comm_time = time.time()
 
@@ -151,7 +158,7 @@ class CurveTracer(tk.Frame):
                 self.port = serial.Serial(self.port_str, baudrate=self.serial_baud_rate, timeout=self.serial_update_period)
                 self.ps = serialdispatch.SerialDispatch(self.port)
                 self.ps.subscribe('vi', self.vi_subscriber)
-                self.ps.subscribe('frequency', self.freq_subscriber)
+                self.ps.subscribe('period', self.period_subscriber)
                 self.status_bar.set_port_status(True)
 
             except serial.SerialException:
@@ -188,15 +195,25 @@ class CurveTracer(tk.Frame):
                     valid = False
 
             if valid:
-                num = int(freq_str)
-                self.ps.publish('frequency', [[num]], ['U16'])
-                print('set frequency to {}Hz'.format(num))
+                frequency = float(freq_str)
+                if frequency > self.max_freq:
+                    frequency = self.max_freq
+                elif frequency < self.min_freq:
+                    frequency = self.min_freq
+
+                period = int(self.instructions_per_second/(self.samples_per_waveform * frequency))
+
+                self.ps.publish('period', [[period]], ['U16'])
+                print('set frequency to {:.1f}Hz'.format(frequency))
+                print('period set to ', period)
+
                 freq_selector_window.destroy()
 
         def return_function(event):
             set_freq()
 
         # bind the 'ENTER' key to the function
+        e.focus()
         e.bind('<Return>', return_function)
 
         btn = tk.Button(freq_selector_window, text='Set Frequency', command=set_freq)
