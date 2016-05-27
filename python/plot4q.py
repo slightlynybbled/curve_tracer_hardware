@@ -76,7 +76,7 @@ class Plot4Q:
 
     def label_x_axis(self, label):
         if label:
-            self.plot.create_text((self.width_px, (self.height_px/2)+5), text=label, anchor=tk.NE)
+            self.plot.create_text((self.width_px - 5, (self.height_px/2)+5), text=label, anchor=tk.NE)
         else:
             pass
 
