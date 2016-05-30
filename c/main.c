@@ -262,15 +262,18 @@ void _ISR _T1Interrupt(void){
     DAC1DAT = (uint16_t)q15_mul(sine_attenuation_factor, q15_fast_sin(theta)) + 32768;
     DAC2DAT = (uint16_t)q15_mul(sine_attenuation_factor, q15_fast_sin(theta + 32768)) + 32768; // theta + 180 deg
     
-    IFS0bits.T1IF = 0;
-    AD1CON1bits.SAMP = 0;
-    
     /* reset sampleIndex on every cycle */
     if(theta == 0){
         if(xmitActive == 0){
             sampleIndex = 0;
         }
+        
+        AD1CON1bits.SAMP = 0;
+    }else if((theta & (HIGH_SPEED_THETA_INCREMENT-1)) == 0){
+        AD1CON1bits.SAMP = 0;
     }
+    
+    IFS0bits.T1IF = 0;
     
     return;
 }
@@ -321,6 +324,8 @@ void _ISR _ADC1Interrupt(void){
         {
             gateVoltage = (q15_t)(ADC1BUF0 >> 1);
             AD1CHS = LD_VOLTAGE_1_AN;
+            
+            LATBbits.LATB9 = 0;
 
             break;
         }
@@ -330,6 +335,5 @@ void _ISR _ADC1Interrupt(void){
     
     /* clear the flag */
     IFS0bits.AD1IF = 0;
-    LATBbits.LATB9 = 0;
 }
 
