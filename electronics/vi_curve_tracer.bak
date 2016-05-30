@@ -194,7 +194,7 @@ L R R7
 U 1 1 56B31AE4
 P 4550 4600
 F 0 "R7" V 4640 4610 50  0000 C CNN
-F 1 "1k" V 4552 4600 50  0000 C CNN
+F 1 "10k" V 4552 4600 50  0000 C CNN
 F 2 "kicad_pcb:SM_0603" V 4480 4600 30  0001 C CNN
 F 3 "" H 4550 4600 30  0000 C CNN
 	1    4550 4600
@@ -545,7 +545,7 @@ F 3 "" H 4250 6900 30  0000 C CNN
 	1    4250 6900
 	0    -1   -1   0   
 $EndComp
-Text Notes 10250 4150 0    60   ~ 0
+Text Notes 10200 4450 0    60   ~ 0
 Sense Resistor
 $Comp
 L CONN_01X03 P4
@@ -1162,7 +1162,7 @@ Wire Wire Line
 Connection ~ 9100 4900
 Wire Wire Line
 	9100 5200 9100 5300
-Text Label 7650 3300 0    60   ~ 0
+Text Label 8150 3300 0    60   ~ 0
 +Vout
 Wire Wire Line
 	9900 5000 10200 5000
@@ -1723,4 +1723,6 @@ Wire Wire Line
 	7200 5500 7200 4900
 Wire Wire Line
 	7200 4900 7800 4900
+Text Notes 4400 4100 0    60   ~ 0
+Add another stage to Isensereference filter!  It needs to be near perfection!
 $EndSCHEMATC
