@@ -114,7 +114,7 @@ void changePeriod(void){
     
     DIS_getElements(0, &newPeriod);
     
-    while(newPeriod > 1000){
+    while(newPeriod > 2000){
         newPeriod >>= 1;
         newOmega >>= 1;
         dacSamplesPerAdcSamples++;
