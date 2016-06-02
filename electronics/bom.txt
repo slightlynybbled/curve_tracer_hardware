@@ -1,0 +1,15 @@
+Item	Qty	Reference	Manufacturer	MPN	Description	Datasheet	
+1	9	 C1, C7, C8, C9, C10, C11, C12, C13, C14	Yageo	CC0603ZRY5V7BB104	capacitor, 100nF, 0603		
+2	12	 C2, C4, C6, C15, C16, C17, C18, C19, C20, C21, C22, C23	Yageo	CC0603ZRY5V7BB105	capacitor, 1uF, 0603		
+3	2	 C3, C5	Kemet	C0603C470J3GACTU	capacitor, 47pF, 0603		
+4	11	 P1, W2, W3, W6, W7, W1, W4, W5, W8, W9, W10					
+5	1	 P2	JAE Electronics	DX4R005JJ2R1800	Conn USB Micro-B		
+6	1	 P3	On Shore Technology, Inc.	OSTTC032162	terminal block, 5.08mm, 3pos		
+7	1	 P4	Assmann WSW Components	A06-LC-TT	DIP socket		
+8	5	 R1, R2, R3, R7, R16	Yageo	RC0603FR-0710KL	resistor, 10kohm, 0603		
+9	1	 R12	Yageo	RC0603FR-0710RL	resistor, 10ohm, 0603		
+10	8	 R4, R5, R6, R8, R11, R13, R14, R15	Yageo	RC0603FR-071KL	resistor, 1kohm, 0603		
+11	2	 R9, R10	Yageo	RC0603FR-0727RL	resistor, 27ohm, 0603		
+12	1	 U1	Microchip	MCP6L04T-I/ST	Opamp 1MHz, Quad, TSSOP-14		
+13	1	 U2	Microchip, Inc.	PIC24FV16KM202	Microcontroller		
+14	1	 U3	FTDI	FT230XS-R	USB-to-UART, IC, SSOP-16		
