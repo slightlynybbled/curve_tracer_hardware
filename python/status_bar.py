@@ -16,6 +16,9 @@ class StatusBar:
         self.status_label = tk.Label(self.parent, text='Comm Status: idle', relief=tk.SUNKEN, bg='red')
         self.status_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
+        self.gate_voltage_label = tk.Label(self.parent, text="Gate: 0.0V", relief=tk.SUNKEN)
+        self.gate_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
+
         self.freq_label = tk.Label(self.parent, text='-Hz', relief=tk.SUNKEN)
         self.freq_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
@@ -57,6 +60,15 @@ class StatusBar:
             self.status_label.configure(bg='green')
         else:
             self.status_label.configure(bg='red')
+
+    def set_gate_voltage(self, gate_voltage):
+        """
+        Sets the gate voltage indicator
+        :param gate_voltage: float value
+        :return: none
+        """
+        if gate_voltage:
+            self.gate_voltage_label.configure(text='Gate: '+str(gate_voltage))
 
     def set_freq(self, frequency):
         """
