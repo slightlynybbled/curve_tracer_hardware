@@ -15,12 +15,12 @@
 #include <string.h>
 
 /*********** Useful defines and macros ****************************************/
-#define LD_VOLTAGE_1_AN 0x0101
-#define LD_VOLTAGE_0_AN 0x0202
-#define GATE_VOLTAGE_AN 0x1010
+#define LD_VOLTAGE_1_AN     0x0101
+#define LD_VOLTAGE_0_AN     0x0202
+#define GATE_VOLTAGE_AN     0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES      64
+#define NUM_OF_SAMPLES                  64
 #define HIGH_SPEED_THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
 typedef enum vimode{PROBE, TRANSISTOR}ViMode;
