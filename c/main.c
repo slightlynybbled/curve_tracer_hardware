@@ -51,6 +51,7 @@ void sendVI(void);
 void sendPeriod(void);
 void changePeriod(void);
 void receiveOffsetCalibration(void);
+void setGateVoltage(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -80,7 +81,8 @@ int main(void) {
     /* add Dispatch subscribers */
     DIS_subscribe("period", &changePeriod);
     DIS_subscribe("cal", &receiveOffsetCalibration);
-
+    DIS_subscribe("gate voltage", &setGateVoltage);
+    
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
@@ -168,6 +170,14 @@ void changePeriod(void){
 
 void receiveOffsetCalibration(void){
     mode = OFFSET_CALIBRATION;
+}
+
+void setGateVoltage(void){
+    q15_t voltage;
+    
+    DIS_getElements(0, &voltage);
+    
+    setDutyCyclePWM2(voltage);
 }
 
 /******************************************************************************/
@@ -300,8 +310,15 @@ void initAdc(void){
 void _ISR _T1Interrupt(void){
     theta += omega;
     
-    DAC1DAT = q15_fast_sin(theta) + 32768;
-    DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
+    if(mode == TRANSISTOR){
+        /* in 'transistor' mode, the gate and source voltages are held constant
+         * while the drain voltage is adjusted */
+        DAC1DAT = 0;
+        DAC2DAT = theta;
+    }else{
+        DAC1DAT = q15_fast_sin(theta) + 32768;
+        DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
+    }
     
     /* reset sampleIndex on every cycle */
     if(theta == 0){

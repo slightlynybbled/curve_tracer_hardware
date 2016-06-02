@@ -24,6 +24,9 @@ class CurveTracer(tk.Frame):
     min_freq = 3
     max_freq = 188
 
+    max_gate_voltage = 5.0
+    min_gate_voltage = 0.0
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -36,7 +39,7 @@ class CurveTracer(tk.Frame):
 
         self.edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.edit_menu.add_command(label='Select Serial Port...', command=self.select_port_window)
-        self.edit_menu.add_command(label='Change frequency...', command=self.select_freq)
+        self.edit_menu.add_command(label='Change frequency...', command=self.select_freq_window)
 
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.help_menu.add_command(label='About', command=About)
@@ -69,8 +72,10 @@ class CurveTracer(tk.Frame):
         # ----------------------------
         # add the shortcut bar buttons and commands
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
-        self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq)
+        self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
+        self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output)
+        self.shortcut_bar.add_btn(text='GateVoltage', command=self.select_gate_voltage_window)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -171,8 +176,8 @@ class CurveTracer(tk.Frame):
         btn_sel = tk.Button(port_selector_window, text='Select', command=select_port)
         btn_sel.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
 
-    def select_freq(self):
-        freq_selector_window= tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
+    def select_freq_window(self):
+        freq_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
         freq_selector_window.grab_set()
         freq_selector_window.title('for(embed) - Serial Port Selector')
         freq_selector_window.iconbitmap('images/forembed.ico')
@@ -220,8 +225,59 @@ class CurveTracer(tk.Frame):
         btn = tk.Button(freq_selector_window, text='Set Frequency', command=set_freq)
         btn.pack(side=tk.BOTTOM)
 
+    def select_gate_voltage_window(self):
+        gate_voltage_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
+        gate_voltage_selector_window.grab_set()
+        gate_voltage_selector_window.title('for(embed) - Gate Voltage Setting Window')
+        gate_voltage_selector_window.iconbitmap('images/forembed.ico')
+
+        e = tk.Entry(gate_voltage_selector_window)
+        e.pack(side=tk.LEFT)
+
+        hz = tk.Message(gate_voltage_selector_window, text='Volts')
+        hz.pack(side=tk.LEFT)
+
+        def set_gate_voltage():
+            gate_voltage_str = e.get()
+
+            # validate freq_str
+            valid = True
+            if not gate_voltage_str:
+                valid = False
+
+            for c in gate_voltage_str:
+                if c not in '0123456789.':
+                    valid = False
+
+            if valid:
+                gate_voltage = float(gate_voltage_str)
+                if gate_voltage > self.max_gate_voltage:
+                    gate_voltage = self.max_gate_voltage
+                elif gate_voltage < self.min_gate_voltage:
+                    gate_voltage = self.min_gate_voltage
+
+                voltage = int(gate_voltage * 32768)
+
+                self.ps.publish('gate voltage', [[voltage]], ['S16'])
+                print('gate voltage set to {:.1f}V'.format(gate_voltage))
+
+                gate_voltage_selector_window.destroy()
+
+        def return_function(event):
+            set_gate_voltage()
+
+        # bind the 'ENTER' key to the function
+        e.focus()
+        e.bind('<Return>', return_function)
+
+        btn = tk.Button(gate_voltage_selector_window, text='Set Frequency', command=set_gate_voltage)
+        btn.pack(side=tk.BOTTOM)
+
     def send_cal_command(self):
         self.ps.publish('cal', [['']], ['STRING'])
+
+    def select_output(self):
+        print("mode not implemented")
 
 if __name__ == '__main__':
     root = tk.Tk()
