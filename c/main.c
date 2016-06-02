@@ -89,7 +89,7 @@ int main(void) {
 /* Tasks below this line */
 void sendVI(void){
     xmitActive = 1;
-    DIS_publish("vi:64,s8,s8", loadVoltage, loadCurrent);
+    DIS_publish_2s8("vi:64", (int8_t*)loadVoltage, (int8_t*)loadCurrent);
     xmitActive = 0;
 }
 
@@ -102,7 +102,7 @@ void sendPeriod(void){
         i++;
     }while(i < dacSamplesPerAdcSamples);
     
-    DIS_publish("period,u16", &period);
+    DIS_publish_u16("period", &period);
 }
 
 /******************************************************************************/
