@@ -33,6 +33,7 @@ volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t gateVoltage = 0;
 volatile q15_t sampleIndex = 0;
 volatile q15_t dacSamplesPerAdcSamples = 1;
+volatile q15_t currentOffset = 0;
 
 volatile ViMode mode = PROBE;
 volatile uint8_t xmitActive = 0;
@@ -92,7 +93,43 @@ int main(void) {
 /******************************************************************************/
 /* Tasks below this line */
 void sendVI(void){
+    uint16_t i;
+    
     xmitActive = 1;
+    
+    if(mode == PROBE){
+        /* apply the currentOffset to each sample */
+        for(i=0; i < NUM_OF_SAMPLES; i++){
+            loadCurrent[i] -= currentOffset;
+        }
+    }else if(mode == OFFSET_CALIBRATION){
+        /* find the average of the total number of samples */
+        int32_t total = 0;
+        uint16_t shift = 0;
+        
+        /* find the number of shifts that will be necessary */
+        uint16_t numOfSamples = NUM_OF_SAMPLES;
+        while(numOfSamples > 1){
+            numOfSamples >>= 1;
+            shift += 1;
+        }
+        
+        /* find the total of all of the samples */
+        for(i=0; i < NUM_OF_SAMPLES; i++){
+            total += (int32_t)(loadCurrent[i]);
+        }
+        
+        /* divide by shifting */
+        while(shift > 0){
+            total >>= 1;
+            shift -= 1;
+        }
+        
+        currentOffset = (q15_t)total;
+        
+        mode = PROBE;
+    }
+    
     DIS_publish_2s8("vi:64", (int8_t*)loadVoltage, (int8_t*)loadCurrent);
     xmitActive = 0;
 }
@@ -130,7 +167,7 @@ void changePeriod(void){
 }
 
 void receiveOffsetCalibration(void){
-
+    mode = OFFSET_CALIBRATION;
 }
 
 /******************************************************************************/
@@ -309,7 +346,6 @@ void _ISR _ADC1Interrupt(void){
         case CURRENT_VOLTAGE_AN:
         {
             if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
-                LATBbits.LATB9 = 1;
                 loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - 16384) >> 8);
             }
 
@@ -328,8 +364,6 @@ void _ISR _ADC1Interrupt(void){
         {
             gateVoltage = (q15_t)(ADC1BUF0 >> 1);
             AD1CHS = LD_VOLTAGE_1_AN;
-            
-            LATBbits.LATB9 = 0;
 
             break;
         }
