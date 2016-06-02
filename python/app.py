@@ -70,6 +70,7 @@ class CurveTracer(tk.Frame):
         # add the shortcut bar buttons and commands
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
         self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq)
+        self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -218,6 +219,9 @@ class CurveTracer(tk.Frame):
 
         btn = tk.Button(freq_selector_window, text='Set Frequency', command=set_freq)
         btn.pack(side=tk.BOTTOM)
+
+    def send_cal_command(self):
+        self.ps.publish('cal', [['']], ['STRING'])
 
 if __name__ == '__main__':
     root = tk.Tk()

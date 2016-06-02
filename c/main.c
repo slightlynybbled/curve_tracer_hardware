@@ -23,7 +23,7 @@
 #define NUM_OF_SAMPLES                  64
 #define HIGH_SPEED_THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
-typedef enum vimode{PROBE, TRANSISTOR}ViMode;
+typedef enum vimode{OFFSET_CALIBRATION, PROBE, TRANSISTOR}ViMode;
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t theta = 0, omega = HIGH_SPEED_THETA_INCREMENT;
@@ -49,6 +49,7 @@ void setDutyCyclePWM2(q15_t dutyCycle);
 void sendVI(void);
 void sendPeriod(void);
 void changePeriod(void);
+void receiveOffsetCalibration(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -75,8 +76,11 @@ int main(void) {
     setDutyCyclePWM1(16384);
     setDutyCyclePWM2(8192);
     
-    /* add necessary tasks */
+    /* add Dispatch subscribers */
     DIS_subscribe("period", &changePeriod);
+    DIS_subscribe("cal", &receiveOffsetCalibration);
+
+    /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
     TASK_add(&sendPeriod, 1000);
@@ -123,6 +127,10 @@ void changePeriod(void){
     omega = newOmega;
     theta = 0;
     PR1 = newPeriod;
+}
+
+void receiveOffsetCalibration(void){
+
 }
 
 /******************************************************************************/
