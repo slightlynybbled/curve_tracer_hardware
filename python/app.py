@@ -118,6 +118,10 @@ class CurveTracer(tk.Frame):
         gate_voltage = 5.0 * self.ps.get_data('gate voltage')[0][0]/32768
         self.status_bar.set_gate_voltage(gate_voltage)
 
+    def mode_subscriber(self):
+        mode = self.ps.get_data('mode')[0][0]
+        self.status_bar.set_mode(mode)
+
     def monitor_dispatch(self):
 
         while True:
@@ -170,6 +174,7 @@ class CurveTracer(tk.Frame):
                 self.ps.subscribe('vi', self.vi_subscriber)
                 self.ps.subscribe('period', self.period_subscriber)
                 self.ps.subscribe('gate voltage', self.gate_voltage_subscriber)
+                self.ps.subscribe('mode', self.mode_subscriber)
                 self.status_bar.set_port_status(True)
 
             except serial.SerialException:
@@ -284,7 +289,9 @@ class CurveTracer(tk.Frame):
         self.ps.publish('cal', [['']], ['STRING'])
 
     def select_output_mode(self):
-        print("mode not implemented")
+        self.ps.publish('mode', [['']], ['STRING'])
+
+
 
 if __name__ == '__main__':
     root = tk.Tk()

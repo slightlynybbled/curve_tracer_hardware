@@ -22,6 +22,9 @@ class StatusBar:
         self.freq_label = tk.Label(self.parent, text='-Hz', relief=tk.SUNKEN)
         self.freq_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
+        self.mode_label = tk.Label(self.parent, text='2-term', relief=tk.SUNKEN)
+        self.mode_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
+
     def set_port_text(self, port_str):
         """
         Used to set the textual port identifier, ie 'COM6' or '/dev/tty0'
@@ -80,6 +83,13 @@ class StatusBar:
         :return: none
         """
         self.freq_label.configure(text='{}Hz'.format(frequency))
+
+    def set_mode(self, mode):
+        mode = int(mode)
+        if mode == 2:
+            self.mode_label.configure(text='2-term')
+        elif mode == 3:
+            self.mode_label.configure(text='3-term')
 
 if __name__ == '__main__':
     root = tk.Tk()

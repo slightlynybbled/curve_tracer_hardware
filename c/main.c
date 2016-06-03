@@ -53,9 +53,12 @@ q15_t getDutyCyclePWM2(void);
 void sendVI(void);
 void sendPeriod(void);
 void sendGateVoltage(void);
+void sendMode(void);
+
 void changePeriod(void);
 void receiveOffsetCalibration(void);
 void setGateVoltage(void);
+void toggleMode(void);
 
 /*********** Function Implementations *****************************************/
 int main(void) {
@@ -86,12 +89,14 @@ int main(void) {
     DIS_subscribe("period", &changePeriod);
     DIS_subscribe("cal", &receiveOffsetCalibration);
     DIS_subscribe("gate voltage", &setGateVoltage);
+    DIS_subscribe("mode", &toggleMode);
     
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
     TASK_add(&sendPeriod, 999);
     TASK_add(&sendGateVoltage, 499);
+    TASK_add(&sendMode, 498);
     
     TASK_manage();
     
@@ -163,7 +168,13 @@ void sendGateVoltage(void){
     q15_t dc = q15_add(getDutyCyclePWM2(), -error);
 
     setDutyCyclePWM2(dc);
-    
+}
+
+void sendMode(void){
+    if(mode == TWO_TERMINAL)
+        DIS_publish_str("mode", "2");
+    else if(mode == THREE_TERMINAL)
+        DIS_publish_str("mode", "3");
 }
 
 /******************************************************************************/
@@ -194,6 +205,14 @@ void setGateVoltage(void){
     DIS_getElements(0, &gateVoltageSetpoint);
     
     setDutyCyclePWM2(gateVoltageSetpoint);
+}
+
+void toggleMode(void){
+    if(mode == TWO_TERMINAL){
+        mode = THREE_TERMINAL;
+    }else{
+        mode = TWO_TERMINAL;
+    }
 }
 
 /******************************************************************************/
