@@ -49,6 +49,7 @@ void setDutyCyclePWM2(q15_t dutyCycle);
 
 void sendVI(void);
 void sendPeriod(void);
+void sendGateVoltage(void);
 void changePeriod(void);
 void receiveOffsetCalibration(void);
 void setGateVoltage(void);
@@ -86,7 +87,8 @@ int main(void) {
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
-    TASK_add(&sendPeriod, 1000);
+    TASK_add(&sendPeriod, 999);
+    TASK_add(&sendGateVoltage, 998);
     
     TASK_manage();
     
@@ -148,6 +150,10 @@ void sendPeriod(void){
     DIS_publish_u16("period", &period);
 }
 
+void sendGateVoltage(void){
+    DIS_publish_s16("gate voltage", (int16_t*)&gateVoltage);
+}
+
 /******************************************************************************/
 /* Subscribers below this line */
 void changePeriod(void){
@@ -184,11 +190,21 @@ void setGateVoltage(void){
 /* Helper functions below this line */
 void setDutyCyclePWM1(q15_t dutyCycle){
     CCP1RB = q15_mul(dutyCycle, CCP1PRL);
+    
+    /* when CCPxRB < 2, PWM doesn't update properly */
+    if(CCP1RB < 2)
+        CCP1RB = 2;
+    
     return;
 }
 
 void setDutyCyclePWM2(q15_t dutyCycle){
     CCP2RB = q15_mul(dutyCycle, CCP2PRL);
+    
+    /* when CCPxRB == 0, PWM doesn't update properly */
+    if(CCP2RB < 2)
+        CCP2RB = 2;
+    
     return;
 }
 
@@ -274,17 +290,15 @@ void initAdc(void){
     /* set up the analog pins as analog inputs */
     DIO_makeInput(DIO_PORT_A, 1);
     DIO_makeInput(DIO_PORT_B, 0);
-    DIO_makeInput(DIO_PORT_B, 4);
     DIO_makeInput(DIO_PORT_A, 4);
-    DIO_makeInput(DIO_PORT_B, 6);
+    DIO_makeInput(DIO_PORT_B, 8);
     
     DIO_makeAnalog(DIO_PORT_A, 1);
     DIO_makeAnalog(DIO_PORT_B, 0);
-    DIO_makeAnalog(DIO_PORT_B, 4);
     DIO_makeAnalog(DIO_PORT_A, 4);
-    DIO_makeAnalog(DIO_PORT_B, 6);
+    DIO_makeAnalog(DIO_PORT_B, 8);
     
-    AD1CON1 = 0x0200;   /* Internal counter triggers conversion
+    AD1CON1 = 0x0200;   /* Clear sample bit to trigger conversion
                          * FORM = left justified  */
     AD1CON2 = 0x0000;   /* Set AD1IF after every 1 samples */
     AD1CON3 = 0x0007;   /* Sample time = 1Tad, Tad = 8 * Tcy */

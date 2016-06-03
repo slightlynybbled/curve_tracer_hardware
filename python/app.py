@@ -75,7 +75,7 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output)
-        self.shortcut_bar.add_btn(text='GateVoltage', command=self.select_gate_voltage_window)
+        self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -113,6 +113,10 @@ class CurveTracer(tk.Frame):
         self.status_bar.set_freq(frequency)
 
         self.last_comm_time = time.time()
+
+    def gate_voltage_subscriber(self):
+        gate_voltage = 5.0 * self.ps.get_data('gate voltage')[0][0]/32768
+        self.status_bar.set_gate_voltage(gate_voltage)
 
     def monitor_dispatch(self):
 
@@ -165,6 +169,7 @@ class CurveTracer(tk.Frame):
                 self.ps = serialdispatch.SerialDispatch(self.port)
                 self.ps.subscribe('vi', self.vi_subscriber)
                 self.ps.subscribe('period', self.period_subscriber)
+                self.ps.subscribe('gate voltage', self.gate_voltage_subscriber)
                 self.status_bar.set_port_status(True)
 
             except serial.SerialException:
@@ -256,10 +261,12 @@ class CurveTracer(tk.Frame):
                 elif gate_voltage < self.min_gate_voltage:
                     gate_voltage = self.min_gate_voltage
 
-                voltage = int(gate_voltage * 32768)
+                voltage = int(gate_voltage * 32768/5.0) - 1
+                if voltage < 0:
+                    voltage = 0
 
                 self.ps.publish('gate voltage', [[voltage]], ['S16'])
-                print('gate voltage set to {:.1f}V'.format(gate_voltage))
+                print('gate voltage set to {:.1f}V ({})'.format(gate_voltage, voltage))
 
                 gate_voltage_selector_window.destroy()
 
@@ -270,7 +277,7 @@ class CurveTracer(tk.Frame):
         e.focus()
         e.bind('<Return>', return_function)
 
-        btn = tk.Button(gate_voltage_selector_window, text='Set Frequency', command=set_gate_voltage)
+        btn = tk.Button(gate_voltage_selector_window, text='Set Gate Voltage', command=set_gate_voltage)
         btn.pack(side=tk.BOTTOM)
 
     def send_cal_command(self):

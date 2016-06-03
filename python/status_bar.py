@@ -68,7 +68,10 @@ class StatusBar:
         :return: none
         """
         if gate_voltage:
-            self.gate_voltage_label.configure(text='Gate: '+str(gate_voltage))
+            if type(gate_voltage) is float:
+                self.gate_voltage_label.configure(text='Gate: {:.2f}V'.format(gate_voltage))
+            elif type(gate_voltage) is str:
+                self.gate_voltage_label.configure(text='Gate: '+gate_voltage+'V')
 
     def set_freq(self, frequency):
         """

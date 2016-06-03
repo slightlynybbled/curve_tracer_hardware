@@ -5,7 +5,7 @@
 #define MAX_NUM_OF_FORMAT_SPECIFIERS    4
 
 /** The maximum number of subscriptions that will be utilized */
-#define MAX_NUM_OF_SUBSCRIPTIONS        4
+#define MAX_NUM_OF_SUBSCRIPTIONS        6
 
 /** The maximum topic string length */
 #define MAX_TOPIC_STR_LEN               16
