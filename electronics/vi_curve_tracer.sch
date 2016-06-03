@@ -301,7 +301,7 @@ F 3 "" H 5000 2750 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 1650 4400 0    60   Input ~ 0
-GATE_VOLTAGE
+GateVoltage
 $Comp
 L R R9
 U 1 1 56B32D81
@@ -637,7 +637,7 @@ F 6 "OSTTC032162" H 10450 2600 60  0001 C CNN "MPN"
 	1    0    0    -1  
 $EndComp
 Text Notes 10150 3650 0    60   ~ 0
-TO-220 Socket
+TO-220 Socket\nMay want to add extra sockets for different arrangements
 Text Notes 10150 2950 0    60   ~ 0
 Screw Terminals
 Text GLabel 9550 2950 0    60   Output ~ 0
