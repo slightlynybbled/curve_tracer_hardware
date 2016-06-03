@@ -38,6 +38,8 @@ volatile q15_t currentOffset = 0;
 volatile ViMode mode = PROBE;
 volatile uint8_t xmitActive = 0;
 
+q15_t gateVoltageSetpoint = 0;
+
 /*********** Function Declarations ********************************************/
 void initOsc(void);
 void initLowZAnalogOut(void);
@@ -46,6 +48,7 @@ void initPwm(void);
 void initAdc(void);
 void setDutyCyclePWM1(q15_t dutyCycle);
 void setDutyCyclePWM2(q15_t dutyCycle);
+q15_t getDutyCyclePWM2(void);
 
 void sendVI(void);
 void sendPeriod(void);
@@ -88,7 +91,7 @@ int main(void) {
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
     TASK_add(&sendPeriod, 999);
-    TASK_add(&sendGateVoltage, 998);
+    TASK_add(&sendGateVoltage, 499);
     
     TASK_manage();
     
@@ -152,6 +155,15 @@ void sendPeriod(void){
 
 void sendGateVoltage(void){
     DIS_publish_s16("gate voltage", (int16_t*)&gateVoltage);
+    
+    /* when the gate voltage is sent, then add or subtract a small amount to the
+     * PWM based on the error */
+    q15_t error = q15_add(gateVoltage, -gateVoltageSetpoint);
+
+    q15_t dc = q15_add(getDutyCyclePWM2(), -error);
+
+    setDutyCyclePWM2(dc);
+    
 }
 
 /******************************************************************************/
@@ -179,11 +191,9 @@ void receiveOffsetCalibration(void){
 }
 
 void setGateVoltage(void){
-    q15_t voltage;
+    DIS_getElements(0, &gateVoltageSetpoint);
     
-    DIS_getElements(0, &voltage);
-    
-    setDutyCyclePWM2(voltage);
+    setDutyCyclePWM2(gateVoltageSetpoint);
 }
 
 /******************************************************************************/
@@ -194,6 +204,8 @@ void setDutyCyclePWM1(q15_t dutyCycle){
     /* when CCPxRB < 2, PWM doesn't update properly */
     if(CCP1RB < 2)
         CCP1RB = 2;
+    else if(CCP1RB >= CCP1PRL)
+        CCP1RB = CCP1PRL - 1;
     
     return;
 }
@@ -204,8 +216,14 @@ void setDutyCyclePWM2(q15_t dutyCycle){
     /* when CCPxRB == 0, PWM doesn't update properly */
     if(CCP2RB < 2)
         CCP2RB = 2;
+    else if(CCP2RB >= CCP2PRL)
+        CCP2RB = CCP2PRL - 1;
     
     return;
+}
+
+q15_t getDutyCyclePWM2(void){
+    return q15_div((q15_t)CCP2RB, (q15_t)CCP2PRL);
 }
 
 /******************************************************************************/
