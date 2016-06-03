@@ -23,7 +23,7 @@
 #define NUM_OF_SAMPLES                  64
 #define HIGH_SPEED_THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
-typedef enum vimode{OFFSET_CALIBRATION, PROBE, TRANSISTOR}ViMode;
+typedef enum vimode{OFFSET_CALIBRATION, TWO_TERMINAL, THREE_TERMINAL}ViMode;
 
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t theta = 0, omega = HIGH_SPEED_THETA_INCREMENT;
@@ -35,7 +35,7 @@ volatile q15_t sampleIndex = 0;
 volatile q15_t dacSamplesPerAdcSamples = 1;
 volatile q15_t currentOffset = 0;
 
-volatile ViMode mode = PROBE;
+volatile ViMode mode = TWO_TERMINAL;
 volatile uint8_t xmitActive = 0;
 
 q15_t gateVoltageSetpoint = 0;
@@ -104,7 +104,7 @@ void sendVI(void){
     
     xmitActive = 1;
     
-    if(mode == PROBE){
+    if(mode == TWO_TERMINAL){
         /* apply the currentOffset to each sample */
         for(i=0; i < NUM_OF_SAMPLES; i++){
             loadCurrent[i] -= currentOffset;
@@ -134,7 +134,7 @@ void sendVI(void){
         
         currentOffset = (q15_t)total;
         
-        mode = PROBE;
+        mode = TWO_TERMINAL;
     }
     
     DIS_publish_2s8("vi:64", (int8_t*)loadVoltage, (int8_t*)loadCurrent);
@@ -342,7 +342,7 @@ void initAdc(void){
 void _ISR _T1Interrupt(void){
     theta += omega;
     
-    if(mode == TRANSISTOR){
+    if(mode == THREE_TERMINAL){
         /* in 'transistor' mode, the gate and source voltages are held constant
          * while the drain voltage is adjusted */
         DAC1DAT = 0;

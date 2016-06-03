@@ -74,7 +74,7 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
         self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
-        self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output)
+        self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
         self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
 
         # ----------------------------
@@ -283,7 +283,7 @@ class CurveTracer(tk.Frame):
     def send_cal_command(self):
         self.ps.publish('cal', [['']], ['STRING'])
 
-    def select_output(self):
+    def select_output_mode(self):
         print("mode not implemented")
 
 if __name__ == '__main__':
