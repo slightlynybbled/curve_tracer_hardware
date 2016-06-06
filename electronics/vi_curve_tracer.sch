@@ -35,10 +35,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
+Title "Curve Tracer"
+Date "2016-06-06"
+Rev "1.0"
+Comp "for(embed)"
 Comment1 ""
 Comment2 ""
 Comment3 ""
@@ -608,36 +608,6 @@ F 6 "resistor, 10kohm, 0603" V 4250 6900 60  0001 C CNN "Description"
 $EndComp
 Text Notes 10200 4450 0    60   ~ 0
 Sense Resistor
-$Comp
-L CONN_01X03 P4
-U 1 1 56B3BE2B
-P 10450 3300
-F 0 "P4" H 10450 3500 50  0000 C CNN
-F 1 "CONN_01X03" V 10550 3300 50  0000 C CNN
-F 2 "kicad_pcb:CONN_2x3_SOCKET" H 10450 3300 50  0001 C CNN
-F 3 "" H 10450 3300 50  0000 C CNN
-F 4 "A06-LC-TT" H 10450 3300 60  0001 C CNN "MPN"
-F 5 "DIP socket" H 10450 3300 60  0001 C CNN "Description"
-F 6 "Assmann WSW Components" H 10450 3300 60  0001 C CNN "Manufacturer"
-	1    10450 3300
-	1    0    0    -1  
-$EndComp
-$Comp
-L CONN_01X03 P3
-U 1 1 56B3C6AA
-P 10450 2600
-F 0 "P3" H 10450 2800 50  0000 C CNN
-F 1 "CONN_01X03" V 10550 2600 50  0000 C CNN
-F 2 "kicad_pcb:CONN_1x3_OSTTC032162" H 10450 2600 50  0001 C CNN
-F 3 "" H 10450 2600 50  0000 C CNN
-F 4 "On Shore Technology, Inc." H 10450 2600 60  0001 C CNN "Manufacturer"
-F 5 "terminal block, 5.08mm, 3pos" H 10450 2600 60  0001 C CNN "Description"
-F 6 "OSTTC032162" H 10450 2600 60  0001 C CNN "MPN"
-	1    10450 2600
-	1    0    0    -1  
-$EndComp
-Text Notes 10150 3650 0    60   ~ 0
-TO-220 Socket\nMay want to add extra sockets for different arrangements
 Text Notes 10150 2950 0    60   ~ 0
 Screw Terminals
 Text GLabel 9550 2950 0    60   Output ~ 0
@@ -1539,7 +1509,7 @@ Wire Wire Line
 Wire Wire Line
 	4900 2400 5100 2400
 Wire Wire Line
-	7950 3200 10250 3200
+	7950 3200 10550 3200
 Wire Wire Line
 	5000 2700 5000 2750
 Wire Wire Line
@@ -1655,11 +1625,11 @@ Wire Wire Line
 Wire Wire Line
 	10050 6300 10050 4700
 Wire Wire Line
-	7550 3300 10250 3300
+	7550 3300 10550 3300
 Wire Wire Line
 	10050 2700 10050 4200
 Wire Wire Line
-	10050 3400 10250 3400
+	10050 3400 10550 3400
 Wire Wire Line
 	3850 6900 4000 6900
 Wire Wire Line
@@ -1683,15 +1653,15 @@ Wire Wire Line
 	7650 4150 10050 4150
 Connection ~ 10050 4150
 Wire Wire Line
-	10250 2700 10050 2700
+	10550 2700 10050 2700
 Connection ~ 10050 3400
 Wire Wire Line
-	10250 2600 9900 2600
+	10550 2600 9900 2600
 Wire Wire Line
 	9900 2600 9900 3300
 Connection ~ 9900 3300
 Wire Wire Line
-	10250 2500 9750 2500
+	10550 2500 9750 2500
 Wire Wire Line
 	9750 2500 9750 3200
 Connection ~ 9750 3200
@@ -1909,4 +1879,72 @@ Wire Wire Line
 	5000 4950 5000 5050
 Wire Wire Line
 	4350 4600 4450 4600
+$Comp
+L CONN_01X04 P3
+U 1 1 5755D3CE
+P 10750 2550
+F 0 "P3" H 10750 2800 50  0000 C CNN
+F 1 "CONN_01X04" V 10850 2550 50  0000 C CNN
+F 2 "kicad_pcb:CONN_1x4_OSTTC042162" H 10750 2550 50  0001 C CNN
+F 3 "" H 10750 2550 50  0000 C CNN
+F 4 "OSTTC042162" H 10750 2550 60  0001 C CNN "MPN"
+F 5 "On Shore Technology, Inc." H 10750 2550 60  0001 C CNN "Manufacturer"
+F 6 "terminal block, 5.08mm, 4pos" H 10750 2550 60  0001 C CNN "Description"
+	1    10750 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L GNDD #PWR056
+U 1 1 5755DDF7
+P 10450 2400
+F 0 "#PWR056" H 10450 2150 50  0001 C CNN
+F 1 "GNDD" H 10450 2250 50  0000 C CNN
+F 2 "" H 10450 2400 50  0000 C CNN
+F 3 "" H 10450 2400 50  0000 C CNN
+	1    10450 2400
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	10550 2400 10450 2400
+$Comp
+L CONN_01X06 P4
+U 1 1 5755ECF2
+P 10750 3450
+F 0 "P4" H 10750 3800 50  0000 C CNN
+F 1 "CONN_01X06" V 10850 3450 50  0000 C CNN
+F 2 "kicad_pcb:CONN_2x3_SOCKET" H 10750 3450 50  0001 C CNN
+F 3 "" H 10750 3450 50  0000 C CNN
+F 4 "A06-LC-TT" H 10750 3450 60  0001 C CNN "MPN"
+F 5 "DIP socket, 2x3" H 10750 3450 60  0001 C CNN "Description"
+F 6 "Assmann WSW Components" H 10750 3450 60  0001 C CNN "Manufacturer"
+	1    10750 3450
+	1    0    0    -1  
+$EndComp
+Text Notes 10950 3250 0    60   ~ 0
+G
+Text Notes 10950 3350 0    60   ~ 0
+D
+Text Notes 10950 3450 0    60   ~ 0
+S
+Text Notes 10950 3750 0    60   ~ 0
+G
+Text Notes 10950 3650 0    60   ~ 0
+S
+Text Notes 10950 3550 0    60   ~ 0
+D
+Wire Wire Line
+	10550 3700 10250 3700
+Wire Wire Line
+	10250 3700 10250 3200
+Connection ~ 10250 3200
+Wire Wire Line
+	10550 3600 10350 3600
+Wire Wire Line
+	10350 3600 10350 3400
+Connection ~ 10350 3400
+Wire Wire Line
+	10550 3500 10450 3500
+Wire Wire Line
+	10450 3500 10450 3300
+Connection ~ 10450 3300
 $EndSCHEMATC
