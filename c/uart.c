@@ -91,12 +91,7 @@ uint16_t UART_readable(void){
 uint16_t UART_writeable(void){
     uint16_t writeable;
     
-    writeLock = 1;
     writeable = (uint16_t)BUF_emptySlots((Buffer*)&txBuf);
-    writeLock = 0;
-    
-    /* if a tx occurred during the writeLock, then there 
-     * is data that needs to be transmitted, kick the transmit interrupt */
     
     return writeable;
 }
