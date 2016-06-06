@@ -64,7 +64,7 @@ class CurveTracer(tk.Frame):
         # ----------------------------
         # create the widgets within their frames
         self.shortcut_bar = ShortcutBar(self.shortcut_frame)
-        self.plot = Plot4Q(self.plot_frame, x_pixels=600, y_pixels=600, xrange=256, yrange=128, grid=True, x_axis_label_str='1.0V/div', y_axis_label_str='5mA/div')
+        self.plot = Plot4Q(self.plot_frame, x_pixels=600, y_pixels=600, xrange=65536, yrange=32768, grid=True, x_axis_label_str='1.0V/div', y_axis_label_str='5mA/div')
         self.status_bar = StatusBar(self.status_frame)
 
         self.ps = None
@@ -72,10 +72,10 @@ class CurveTracer(tk.Frame):
         # ----------------------------
         # add the shortcut bar buttons and commands
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
-        self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
         self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
+        self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -103,10 +103,6 @@ class CurveTracer(tk.Frame):
                 y1 = self.ps.get_data('vi')[1][i]
                 y2 = self.ps.get_data('vi')[1][i + 1]
                 self.plot.plot_line((x1, y1), (x2, y2), fill=color_str)
-
-        print('v: ' + str(self.ps.get_data('vi')[0]))
-        print('i: ' + str(self.ps.get_data('vi')[1]))
-        print('')
 
         self.last_comm_time = time.time()
 

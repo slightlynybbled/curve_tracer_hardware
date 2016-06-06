@@ -28,8 +28,8 @@ typedef enum vimode{OFFSET_CALIBRATION, TWO_TERMINAL, THREE_TERMINAL}ViMode;
 /*********** Variable Declarations ********************************************/
 volatile q16angle_t theta = 0, omega = HIGH_SPEED_THETA_INCREMENT;
 volatile q15_t loadVoltageL = 0;
-volatile int8_t loadVoltage[NUM_OF_SAMPLES] = {0};
-volatile int8_t loadCurrent[NUM_OF_SAMPLES] = {0};
+volatile int16_t loadVoltage[NUM_OF_SAMPLES] = {0};
+volatile int16_t loadCurrent[NUM_OF_SAMPLES] = {0};
 volatile q15_t gateVoltage = 0;
 volatile q15_t sampleIndex = 0;
 volatile q15_t dacSamplesPerAdcSamples = 1;
@@ -142,7 +142,7 @@ void sendVI(void){
         mode = TWO_TERMINAL;
     }
     
-    DIS_publish_2s8("vi:64", (int8_t*)loadVoltage, (int8_t*)loadCurrent);
+    DIS_publish_2s16("vi:64", (int16_t*)loadVoltage, (int16_t*)loadCurrent);
     xmitSent = 1;
     xmitActive = 0;
 }
@@ -415,7 +415,7 @@ void _ISR _ADC1Interrupt(void){
         case LD_VOLTAGE_0_AN:
         {
             if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
-                int8_t sample = (int8_t)(((ADC1BUF0 >> 1) - loadVoltageL) >> 8);
+                int16_t sample = ((ADC1BUF0 >> 1) - loadVoltageL);
                 loadVoltage[sampleIndex] = sample;
             }
             
@@ -428,7 +428,7 @@ void _ISR _ADC1Interrupt(void){
         case CURRENT_VOLTAGE_AN:
         {
             if((sampleIndex < NUM_OF_SAMPLES) && (xmitActive == 0)){
-                loadCurrent[sampleIndex] = (int8_t)(((ADC1BUF0 >> 1) - 16384) >> 8);
+                loadCurrent[sampleIndex] = (int16_t)((ADC1BUF0 >> 1) - 16384);
             }
 
             sampleIndex++;
