@@ -392,7 +392,6 @@ void _ISR _T1Interrupt(void){
         if((xmitActive == 0) && (xmitSent == 1)){
             sampleIndex = 0;
             xmitSent = 0;
-            LATBbits.LATB9 = 1;
         }
         
         AD1CON1bits.SAMP = 0;
@@ -407,6 +406,8 @@ void _ISR _T1Interrupt(void){
 }
 
 void _ISR _ADC1Interrupt(void){
+    uint8_t zeroSample = 0;
+    
     switch(AD1CHS){
         case LD_VOLTAGE_1_AN:
         {
@@ -439,7 +440,6 @@ void _ISR _ADC1Interrupt(void){
             sampleIndex++;
             if(sampleIndex >= NUM_OF_SAMPLES){
                 sampleIndex = NUM_OF_SAMPLES;
-                LATBbits.LATB9 = 0;
             }
 
             AD1CHS = GATE_VOLTAGE_AN;
