@@ -104,6 +104,10 @@ class CurveTracer(tk.Frame):
                 y2 = self.ps.get_data('vi')[1][i + 1]
                 self.plot.plot_line((x1, y1), (x2, y2), fill=color_str)
 
+        print('v: ' + str(self.ps.get_data('vi')[0]))
+        print('i: ' + str(self.ps.get_data('vi')[1]))
+        print('')
+
         self.last_comm_time = time.time()
 
     def period_subscriber(self):

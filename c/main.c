@@ -36,7 +36,7 @@ volatile q15_t dacSamplesPerAdcSamples = 1;
 volatile q15_t currentOffset = 0;
 
 volatile ViMode mode = TWO_TERMINAL;
-volatile uint8_t xmitActive = 0;
+volatile uint8_t xmitActive = 0, xmitSent = 0;
 
 q15_t gateVoltageSetpoint = 0;
 
@@ -143,6 +143,7 @@ void sendVI(void){
     }
     
     DIS_publish_2s8("vi:64", (int8_t*)loadVoltage, (int8_t*)loadCurrent);
+    xmitSent = 1;
     xmitActive = 0;
 }
 
@@ -359,13 +360,23 @@ void initAdc(void){
  * The T1Interrupt will be used to load the DACs and generate the sine wave
  */
 void _ISR _T1Interrupt(void){
+    static int countUp = 0;
     theta += omega;
     
     if(mode == THREE_TERMINAL){
         /* in 'transistor' mode, the gate and source voltages are held constant
          * while the drain voltage is adjusted */
         DAC1DAT = 0;
-        DAC2DAT = theta;
+        
+        if(countUp){
+            uint32_t dac = theta;
+            if(dac == 0)
+                dac = 65535;
+            DAC2DAT = dac;
+        }else{
+            uint32_t dac = (uint32_t)65536 - (uint32_t)theta;
+            DAC2DAT = (uint16_t)(dac);
+        }
     }else{
         DAC1DAT = q15_fast_sin(theta) + 32768;
         DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
@@ -373,11 +384,14 @@ void _ISR _T1Interrupt(void){
     
     /* reset sampleIndex on every cycle */
     if(theta == 0){
-        if(xmitActive == 0){
+        if((xmitActive == 0) && (xmitSent == 1)){
             sampleIndex = 0;
+            xmitSent = 0;
+            LATBbits.LATB9 = 1;
         }
         
         AD1CON1bits.SAMP = 0;
+        countUp ^= 1;
     }else if((theta & (HIGH_SPEED_THETA_INCREMENT-1)) == 0){
         AD1CON1bits.SAMP = 0;
     }
@@ -420,6 +434,7 @@ void _ISR _ADC1Interrupt(void){
             sampleIndex++;
             if(sampleIndex >= NUM_OF_SAMPLES){
                 sampleIndex = NUM_OF_SAMPLES;
+                LATBbits.LATB9 = 0;
             }
 
             AD1CHS = GATE_VOLTAGE_AN;
