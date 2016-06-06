@@ -286,9 +286,14 @@ void initInterrupts(void){
     INTCON1 = 0x8000;
     INTCON2 = 0x4000;
     
+    /* initialize the period */
+    dacSamplesPerAdcSamples = 1;
+    omega = HIGH_SPEED_THETA_INCREMENT;
+    theta = 0;
+    PR1 = 1567;
+    
     /* timer interrupts */
     T1CON = 0x0000;
-    PR1 = 1000;
     IFS0bits.T1IF = 0;
     IEC0bits.T1IE = 1;
     T1CONbits.TON = 1;
