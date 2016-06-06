@@ -20,9 +20,9 @@ class CurveTracer(tk.Frame):
     port = serial.Serial(None)
 
     instructions_per_second = 12000000.0
-    samples_per_waveform = 64
+    samples_per_waveform = 128
     min_freq = 3
-    max_freq = 188
+    max_freq = 100
 
     max_gate_voltage = 5.0
     min_gate_voltage = 0.0
@@ -102,6 +102,8 @@ class CurveTracer(tk.Frame):
                 y1 = self.ps.get_data('vi')[1][i]
                 self.plot.plot_point((x1, y1), fill=color_str)
 
+
+        self.samples_per_waveform = len(self.ps.get_data('vi')[0])
         self.last_comm_time = time.time()
 
     def period_subscriber(self):

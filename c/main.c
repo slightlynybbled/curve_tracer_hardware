@@ -151,10 +151,10 @@ void sendPeriod(void){
     uint16_t period = PR1;
     
     int i = 1;
-    do{
+    while(i < dacSamplesPerAdcSamples){
         period <<= 1;
         i++;
-    }while(i < dacSamplesPerAdcSamples);
+    }
     
     DIS_publish_u16("period", &period);
 }
@@ -406,8 +406,6 @@ void _ISR _T1Interrupt(void){
 }
 
 void _ISR _ADC1Interrupt(void){
-    uint8_t zeroSample = 0;
-    
     switch(AD1CHS){
         case LD_VOLTAGE_1_AN:
         {
@@ -452,7 +450,7 @@ void _ISR _ADC1Interrupt(void){
         {
             gateVoltage = (q15_t)(ADC1BUF0 >> 1);
             AD1CHS = LD_VOLTAGE_1_AN;
-
+            
             break;
         }
 
