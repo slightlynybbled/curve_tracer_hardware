@@ -20,7 +20,7 @@
 #define GATE_VOLTAGE_AN     0x1010
 #define CURRENT_VOLTAGE_AN  0x1414
 
-#define NUM_OF_SAMPLES                  64
+#define NUM_OF_SAMPLES                 (128)
 #define HIGH_SPEED_THETA_INCREMENT     (65536/NUM_OF_SAMPLES)
 
 typedef enum vimode{OFFSET_CALIBRATION, TWO_TERMINAL, THREE_TERMINAL}ViMode;
@@ -142,7 +142,7 @@ void sendVI(void){
         mode = TWO_TERMINAL;
     }
     
-    DIS_publish_2s16("vi:64", (int16_t*)loadVoltage, (int16_t*)loadCurrent);
+    DIS_publish_2s16("vi:128", (int16_t*)loadVoltage, (int16_t*)loadCurrent);
     xmitSent = 1;
     xmitActive = 0;
 }
