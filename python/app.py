@@ -85,7 +85,7 @@ class CurveTracer(tk.Frame):
         dispatch_monitor_thread.start()
 
     def vi_subscriber(self):
-        self.plot.remove_lines()
+        self.plot.remove_points()
 
         data_length = len(self.ps.get_data('vi')[0])
         color_increment = int(256 / data_length)
@@ -94,15 +94,13 @@ class CurveTracer(tk.Frame):
         base_color = red + blue
 
         for i, element in enumerate(self.ps.get_data('vi')[0]):
-            if i < len(self.ps.get_data('vi')[0]) - 1:
+            if i < len(self.ps.get_data('vi')[0]):
                 color = base_color + (int(i * color_increment) << 8)
                 color_str = '#' + hex(color)[2:].zfill(6)
 
                 x1 = self.ps.get_data('vi')[0][i]
-                x2 = self.ps.get_data('vi')[0][i + 1]
                 y1 = self.ps.get_data('vi')[1][i]
-                y2 = self.ps.get_data('vi')[1][i + 1]
-                self.plot.plot_line((x1, y1), (x2, y2), fill=color_str)
+                self.plot.plot_point((x1, y1), fill=color_str)
 
         self.last_comm_time = time.time()
 
