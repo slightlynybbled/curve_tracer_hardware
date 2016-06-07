@@ -22,6 +22,9 @@ class StatusBar:
         self.peak_voltage_label = tk.Label(self.parent, text="Vp: 0.0V", relief=tk.SUNKEN)
         self.peak_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
+        self.offset_voltage_label = tk.Label(self.parent, text="Vo: 0.0V", relief=tk.SUNKEN)
+        self.offset_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
+
         self.freq_label = tk.Label(self.parent, text='-Hz', relief=tk.SUNKEN)
         self.freq_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
@@ -90,6 +93,18 @@ class StatusBar:
                 self.peak_voltage_label.configure(text='Peak: {:.2f}V'.format(peak_voltage))
             elif type(peak_voltage) is str:
                 self.peak_voltage_label.configure(text='Peak: '+peak_voltage+'V')
+
+    def set_offset_voltage(self, offset_voltage):
+        """
+        Sets the offset voltage indicator
+        :param peak_voltage: float value
+        :return: none
+        """
+        if offset_voltage:
+            if type(offset_voltage) is float:
+                self.offset_voltage_label.configure(text='Offset: {:.2f}V'.format(offset_voltage))
+            elif type(offset_voltage) is str:
+                self.peak_voltage_label.configure(text='Offset: '+offset_voltage+'V')
 
     def set_freq(self, frequency):
         """

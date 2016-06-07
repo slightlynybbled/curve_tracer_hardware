@@ -40,6 +40,7 @@ volatile uint8_t xmitActive = 0, xmitSent = 0;
 
 q15_t gateVoltageSetpoint = 0;
 q15_t voltageScaler = 32767;
+q15_t voltageOffset = 0;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -55,12 +56,14 @@ void sendVI(void);
 void sendPeriod(void);
 void sendGateVoltage(void);
 void sendPeakVoltage(void);
+void sendOffsetVoltage(void);
 void sendMode(void);
 
 void changePeriod(void);
 void receiveOffsetCalibration(void);
 void setGateVoltage(void);
 void setPeakVoltage(void);
+void setOffsetVoltage(void);
 void toggleMode(void);
 
 /*********** Function Implementations *****************************************/
@@ -92,16 +95,18 @@ int main(void) {
     DIS_subscribe("period", &changePeriod);
     DIS_subscribe("cal", &receiveOffsetCalibration);
     DIS_subscribe("gate voltage", &setGateVoltage);
-    DIS_subscribe("mode", &toggleMode);
     DIS_subscribe("peak voltage", &setPeakVoltage);
+    DIS_subscribe("offset voltage", &setOffsetVoltage);
+    DIS_subscribe("mode", &toggleMode);    
     
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
-    TASK_add(&sendVI, 500);
+    TASK_add(&sendVI, 750);
     TASK_add(&sendPeriod, 999);
     TASK_add(&sendGateVoltage, 499);
     TASK_add(&sendPeakVoltage, 498);
-    TASK_add(&sendMode, 497);
+    TASK_add(&sendOffsetVoltage, 497);
+    TASK_add(&sendMode, 496);
     
     TASK_manage();
     
@@ -180,6 +185,10 @@ void sendPeakVoltage(void){
     DIS_publish_s16("peak voltage", (int16_t*)&voltageScaler);
 }
 
+void sendOffsetVoltage(void){
+    DIS_publish_s16("offset voltage", (int16_t*)&voltageOffset);
+}
+
 void sendMode(void){
     if(mode == TWO_TERMINAL)
         DIS_publish_str("mode", "2");
@@ -219,6 +228,10 @@ void setGateVoltage(void){
 
 void setPeakVoltage(void){
     DIS_getElements(0, &voltageScaler);
+}
+
+void setOffsetVoltage(void){
+    DIS_getElements(0, &voltageOffset);
 }
 
 void toggleMode(void){
@@ -396,8 +409,20 @@ void _ISR _T1Interrupt(void){
             DAC2DAT = (uint16_t)(dac);
         }
     }else{
-        DAC1DAT = q15_mul(voltageScaler, q15_fast_sin(theta)) + 32768;
-        DAC2DAT = 65535 - DAC1DAT; // theta + 180 deg
+        q15_t dac1 = q15_add(-voltageOffset, q15_mul(voltageScaler, q15_fast_sin(theta)));
+        q15_t dac2 = q15_add(voltageOffset, q15_mul(voltageScaler, q15_fast_sin(theta + 32768)));
+        
+        if(dac1 < 0){
+            DAC1DAT = 32768 - (uint16_t)(-dac1);
+        }else{
+            DAC1DAT = 32768 + (uint16_t)dac1;
+        }
+        
+        if(dac2 < 0){
+            DAC2DAT = 32768 - (uint16_t)(-dac2);
+        }else{
+            DAC2DAT = 32768 + (uint16_t)dac2;
+        }
     }
     
     /* reset sampleIndex on every cycle */

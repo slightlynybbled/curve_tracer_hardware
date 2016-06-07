@@ -4,6 +4,7 @@ import time
 import serial
 import serial.tools.list_ports
 import serialdispatch
+from PIL import Image, ImageTk
 
 from shortcut_bar import ShortcutBar
 from plot4q import Plot4Q
@@ -30,6 +31,9 @@ class CurveTracer(tk.Frame):
     max_vp = 5.0
     min_vp = 0.0
 
+    max_offset = 5.0
+    min_offset = -5.0
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -42,7 +46,7 @@ class CurveTracer(tk.Frame):
 
         self.edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.edit_menu.add_command(label='Select Serial Port...', command=self.select_port_window)
-        self.edit_menu.add_command(label='Change frequency...', command=self.select_freq_window)
+        self.edit_menu.add_command(label='Edit Waveform...', command=self.setup_waveform_window)
 
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.help_menu.add_command(label='About', command=About)
@@ -78,8 +82,7 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
         self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
-        self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
-        self.shortcut_bar.add_btn(image_path='images/amplitude.png', command=self.select_amplitude_window)
+        self.shortcut_bar.add_btn(image_path='images/btn-waveform.png', command=self.setup_waveform_window)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -124,6 +127,10 @@ class CurveTracer(tk.Frame):
     def peak_voltage_subscriber(self):
         peak_voltage = 5.0 * self.ps.get_data('peak voltage')[0][0]/32768
         self.status_bar.set_peak_voltage(peak_voltage)
+
+    def offset_voltage_subscriber(self):
+        offset_voltage = 5.0 * self.ps.get_data('offset voltage')[0][0]/32768
+        self.status_bar.set_offset_voltage(offset_voltage)
 
     def mode_subscriber(self):
         mode = self.ps.get_data('mode')[0][0]
@@ -182,6 +189,7 @@ class CurveTracer(tk.Frame):
                 self.ps.subscribe('period', self.period_subscriber)
                 self.ps.subscribe('gate voltage', self.gate_voltage_subscriber)
                 self.ps.subscribe('peak voltage', self.peak_voltage_subscriber)
+                self.ps.subscribe('offset voltage', self.offset_voltage_subscriber)
                 self.ps.subscribe('mode', self.mode_subscriber)
                 self.status_bar.set_port_status(True)
 
@@ -193,56 +201,6 @@ class CurveTracer(tk.Frame):
 
         btn_sel = tk.Button(port_selector_window, text='Select', command=select_port)
         btn_sel.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
-
-    def select_freq_window(self):
-        freq_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
-        freq_selector_window.grab_set()
-        freq_selector_window.title('for(embed) - Serial Port Selector')
-        freq_selector_window.iconbitmap('images/forembed.ico')
-
-        e = tk.Entry(freq_selector_window)
-        e.pack(side=tk.LEFT)
-
-        hz = tk.Message(freq_selector_window, text='Hz')
-        hz.pack(side=tk.LEFT)
-
-        def set_freq():
-            freq_str = e.get()
-
-            # validate freq_str
-            valid = True
-            if not freq_str:
-                valid = False
-
-            for c in freq_str:
-                if c not in '0123456789.':
-                    valid = False
-
-            if valid:
-                frequency = float(freq_str)
-
-                period = int(self.instructions_per_second/(self.samples_per_waveform * frequency))
-
-                if period > self.max_period:
-                    period = self.max_period
-                elif period < self.min_period:
-                    period = self.min_period
-
-                self.ps.publish('period', [[period]], ['U16'])
-                print('set frequency to {:.1f}Hz'.format(frequency))
-                print('period set to ', period)
-
-                freq_selector_window.destroy()
-
-        def return_function(event):
-            set_freq()
-
-        # bind the 'ENTER' key to the function
-        e.focus()
-        e.bind('<Return>', return_function)
-
-        btn = tk.Button(freq_selector_window, text='Set Frequency', command=set_freq)
-        btn.pack(side=tk.BOTTOM)
 
     def select_gate_voltage_window(self):
         gate_voltage_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
@@ -294,55 +252,154 @@ class CurveTracer(tk.Frame):
         btn = tk.Button(gate_voltage_selector_window, text='Set Gate Voltage', command=set_gate_voltage)
         btn.pack(side=tk.BOTTOM)
 
-    def select_amplitude_window(self):
-        vp_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
-        vp_selector_window.grab_set()
-        vp_selector_window.title('for(embed) - Voltage Setting Window')
-        vp_selector_window.iconbitmap('images/forembed.ico')
+    def calc_period(self, freq_str):
+        valid = True
 
-        e = tk.Entry(vp_selector_window)
-        e.pack(side=tk.LEFT)
-
-        hz = tk.Message(vp_selector_window, text='Volts')
-        hz.pack(side=tk.LEFT)
-
-        def set_peak_voltage():
-            voltage_str = e.get()
-
-            # validate freq_str
-            valid = True
-            if not voltage_str:
+        for c in freq_str:
+            if c not in '0123456789.':
                 valid = False
 
-            for c in voltage_str:
+        if valid:
+            frequency = float(freq_str)
+            period = int(self.instructions_per_second / (self.samples_per_waveform * frequency))
+
+            if period > self.max_period:
+                period = self.max_period
+            elif period < self.min_period:
+                period = self.min_period
+
+            return period
+
+        else:
+            raise ValueError('Could not convert the string to a float')
+
+    def scale_voltage(self, voltage_str, allow_negative=None, max_value=None, min_value=None, scaler=5.0):
+        valid = True
+
+        for c in voltage_str:
+            if allow_negative:
+                if c not in '-0123456789.':
+                    valid = False
+            else:
                 if c not in '0123456789.':
                     valid = False
 
-            if valid:
-                gate_voltage = float(voltage_str)
-                if gate_voltage > self.max_vp:
-                    gate_voltage = self.max_vp
-                elif gate_voltage < self.min_vp:
-                    gate_voltage = self.min_vp
+        if valid:
+            voltage = float(voltage_str)
 
-                voltage = int(gate_voltage * 32768/5.0) - 1
+            if max_value:
+                if voltage > max_value:
+                    voltage = max_value
+
+            if min_value:
+                if voltage < min_value:
+                    voltage = min_value
+
+            voltage = int(voltage * 32768 / scaler) - 1
+
+            if allow_negative:
+                if voltage < -32768:
+                    voltage = -32768
+            else:
                 if voltage < 0:
                     voltage = 0
 
-                self.ps.publish('peak voltage', [[voltage]], ['S16'])
-                print('peak voltage set to {:.1f}V ({})'.format(gate_voltage, voltage))
+            return voltage
+        else:
+            raise ValueError('Could not convert the string to a float')
 
-                vp_selector_window.destroy()
+    def setup_waveform_window(self):
+        waveform_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
+        waveform_window.grab_set()
+        waveform_window.title('Waveform Setup')
+        waveform_window.iconbitmap('images/forembed.ico')
+
+        # create the widgets
+        img = ImageTk.PhotoImage(Image.open("images/waveform.png"))
+        c = tk.Canvas(waveform_window, width=img.width(), height=img.height())
+        c.image = img   # keep a reference so the image doesn't get garbage-collected
+        ci = c.create_image((0, 0), image=img, anchor="nw")
+
+        label_f = tk.Label(waveform_window, text="Frequency (f): ")
+        entry_f = tk.Entry(waveform_window)
+        label_unit_f = tk.Label(waveform_window, text="Hz")
+
+        label_a = tk.Label(waveform_window, text="Peak Voltage (a): ")
+        entry_a = tk.Entry(waveform_window)
+        label_unit_a = tk.Label(waveform_window, text="Volts")
+
+        label_o = tk.Label(waveform_window, text="Voltage Offset (o): ")
+        entry_o = tk.Entry(waveform_window)
+        label_unit_o = tk.Label(waveform_window, text="Volts")
+
+        # define helper functions locally
+        def set_freq():
+            try:
+                f_str = entry_f.get()
+
+                if f_str:
+                    period = self.calc_period(f_str)
+                    self.ps.publish('period', [[period]], ['U16'])
+                    print('set frequency to {}Hz ({} period)'.format(f_str, period))
+
+            except ValueError:
+                pass
+
+        def set_peak_voltage():
+            try:
+                v_str = entry_a.get()
+
+                if v_str:
+                    peak_v = self.scale_voltage(v_str, allow_negative=False, min_value=0.0, max_value=5.0)
+                    self.ps.publish('peak voltage', [[peak_v]], ['S16'])
+                    print('peak voltage set to {}V ({})'.format(v_str, peak_v))
+            except ValueError:
+                pass
+
+        def set_offset_voltage():
+            try:
+                v_str = entry_o.get()
+
+                if v_str:
+                    offset_v = self.scale_voltage(v_str, allow_negative=True, min_value=-5.0, max_value=5.0)
+                    self.ps.publish('offset voltage', [[offset_v]], ['S16'])
+                    print('offset voltage set to {}V ({})'.format(v_str, offset_v))
+            except ValueError:
+                pass
+
+        def setup_waveform():
+            set_freq()
+            set_peak_voltage()
+            set_offset_voltage()
+            waveform_window.destroy()
+
+        btn = tk.Button(waveform_window, text="Setup Waveform", command=setup_waveform)
 
         def return_function(event):
-            set_peak_voltage()
+            setup_waveform()
 
         # bind the 'ENTER' key to the function
-        e.focus()
-        e.bind('<Return>', return_function)
+        entry_f.focus()
+        entry_f.bind('<Return>', return_function)
+        entry_a.bind('<Return>', return_function)
+        entry_o.bind('<Return>', return_function)
 
-        btn = tk.Button(vp_selector_window, text='Set Gate Voltage', command=set_peak_voltage)
-        btn.pack(side=tk.BOTTOM)
+        # Grid all widgets
+        c.grid(row=0, column=0, columnspan=3)
+
+        label_f.grid(row=1, column=0, sticky=tk.E, padx=self.widget_padding, pady=self.widget_padding)
+        entry_f.grid(row=1, column=1, padx=self.widget_padding, pady=self.widget_padding)
+        label_unit_f.grid(row=1, column=2, sticky=tk.W, padx=self.widget_padding, pady=self.widget_padding)
+
+        label_a.grid(row=2, column=0, sticky=tk.E, padx=self.widget_padding, pady=self.widget_padding)
+        entry_a.grid(row=2, column=1, padx=self.widget_padding, pady=self.widget_padding)
+        label_unit_a.grid(row=2, column=2, sticky=tk.W, padx=self.widget_padding, pady=self.widget_padding)
+
+        label_o.grid(row=3, column=0, sticky=tk.E, padx=self.widget_padding, pady=self.widget_padding)
+        entry_o.grid(row=3, column=1, padx=self.widget_padding, pady=self.widget_padding)
+        label_unit_o.grid(row=3, column=2, sticky=tk.W, padx=self.widget_padding, pady=self.widget_padding)
+
+        btn.grid(row=4, column=0, columnspan=3, padx=self.widget_padding, pady=self.widget_padding)
 
     def send_cal_command(self):
         self.ps.publish('cal', [['']], ['STRING'])
