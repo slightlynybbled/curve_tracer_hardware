@@ -13,11 +13,14 @@ class StatusBar:
         self.port_label = tk.Label(self.parent, text='Port: none', relief=tk.SUNKEN, bg='red')
         self.port_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
-        self.status_label = tk.Label(self.parent, text='Comm Status: idle', relief=tk.SUNKEN, bg='red')
+        self.status_label = tk.Label(self.parent, text='Comm: idle', relief=tk.SUNKEN, bg='red')
         self.status_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
         self.gate_voltage_label = tk.Label(self.parent, text="Gate: 0.0V", relief=tk.SUNKEN)
         self.gate_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
+
+        self.peak_voltage_label = tk.Label(self.parent, text="Vp: 0.0V", relief=tk.SUNKEN)
+        self.peak_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
         self.freq_label = tk.Label(self.parent, text='-Hz', relief=tk.SUNKEN)
         self.freq_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
@@ -51,7 +54,7 @@ class StatusBar:
         :param comm_str: the desired string
         :return: none
         """
-        self.status_label.configure(text='Comm Status: '+comm_str)
+        self.status_label.configure(text='Comm: '+comm_str)
 
     def set_comm_status(self, comm_status):
         """
@@ -75,6 +78,18 @@ class StatusBar:
                 self.gate_voltage_label.configure(text='Gate: {:.2f}V'.format(gate_voltage))
             elif type(gate_voltage) is str:
                 self.gate_voltage_label.configure(text='Gate: '+gate_voltage+'V')
+
+    def set_peak_voltage(self, peak_voltage):
+        """
+        Sets the peak voltage indicator
+        :param peak_voltage: float value
+        :return: none
+        """
+        if peak_voltage:
+            if type(peak_voltage) is float:
+                self.peak_voltage_label.configure(text='Peak: {:.2f}V'.format(peak_voltage))
+            elif type(peak_voltage) is str:
+                self.peak_voltage_label.configure(text='Peak: '+peak_voltage+'V')
 
     def set_freq(self, frequency):
         """

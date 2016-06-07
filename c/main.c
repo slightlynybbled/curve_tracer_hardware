@@ -39,6 +39,7 @@ volatile ViMode mode = TWO_TERMINAL;
 volatile uint8_t xmitActive = 0, xmitSent = 0;
 
 q15_t gateVoltageSetpoint = 0;
+q15_t voltageScaler = 32767;
 
 /*********** Function Declarations ********************************************/
 void initOsc(void);
@@ -53,11 +54,13 @@ q15_t getDutyCyclePWM2(void);
 void sendVI(void);
 void sendPeriod(void);
 void sendGateVoltage(void);
+void sendPeakVoltage(void);
 void sendMode(void);
 
 void changePeriod(void);
 void receiveOffsetCalibration(void);
 void setGateVoltage(void);
+void setPeakVoltage(void);
 void toggleMode(void);
 
 /*********** Function Implementations *****************************************/
@@ -90,13 +93,15 @@ int main(void) {
     DIS_subscribe("cal", &receiveOffsetCalibration);
     DIS_subscribe("gate voltage", &setGateVoltage);
     DIS_subscribe("mode", &toggleMode);
+    DIS_subscribe("peak voltage", &setPeakVoltage);
     
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
     TASK_add(&sendVI, 500);
     TASK_add(&sendPeriod, 999);
     TASK_add(&sendGateVoltage, 499);
-    TASK_add(&sendMode, 498);
+    TASK_add(&sendPeakVoltage, 498);
+    TASK_add(&sendMode, 497);
     
     TASK_manage();
     
@@ -171,6 +176,10 @@ void sendGateVoltage(void){
     setDutyCyclePWM2(dc);
 }
 
+void sendPeakVoltage(void){
+    DIS_publish_s16("peak voltage", (int16_t*)&voltageScaler);
+}
+
 void sendMode(void){
     if(mode == TWO_TERMINAL)
         DIS_publish_str("mode", "2");
@@ -206,6 +215,10 @@ void setGateVoltage(void){
     DIS_getElements(0, &gateVoltageSetpoint);
     
     setDutyCyclePWM2(gateVoltageSetpoint);
+}
+
+void setPeakVoltage(void){
+    DIS_getElements(0, &voltageScaler);
 }
 
 void toggleMode(void){
@@ -383,8 +396,8 @@ void _ISR _T1Interrupt(void){
             DAC2DAT = (uint16_t)(dac);
         }
     }else{
-        DAC1DAT = q15_fast_sin(theta) + 32768;
-        DAC2DAT = q15_fast_sin(theta + 32768) + 32768; // theta + 180 deg
+        DAC1DAT = q15_mul(voltageScaler, q15_fast_sin(theta)) + 32768;
+        DAC2DAT = q15_mul(voltageScaler, q15_fast_sin(theta + 32768)) + 32768; // theta + 180 deg
     }
     
     /* reset sampleIndex on every cycle */

@@ -21,11 +21,14 @@ class CurveTracer(tk.Frame):
 
     instructions_per_second = 12000000.0
     samples_per_waveform = 128
-    min_freq = 3
-    max_freq = 100
+    max_period = 65250
+    min_period = 1000
 
     max_gate_voltage = 5.0
     min_gate_voltage = 0.0
+
+    max_vp = 5.0
+    min_vp = 0.0
 
     def __init__(self, parent):
         self.parent = parent
@@ -76,6 +79,7 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
         self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
         self.shortcut_bar.add_btn(image_path='images/freq.png', command=self.select_freq_window)
+        self.shortcut_bar.add_btn(image_path='images/amplitude.png', command=self.select_amplitude_window)
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -102,7 +106,6 @@ class CurveTracer(tk.Frame):
                 y1 = self.ps.get_data('vi')[1][i]
                 self.plot.plot_point((x1, y1), fill=color_str)
 
-
         self.samples_per_waveform = len(self.ps.get_data('vi')[0])
         self.last_comm_time = time.time()
 
@@ -117,6 +120,10 @@ class CurveTracer(tk.Frame):
     def gate_voltage_subscriber(self):
         gate_voltage = 5.0 * self.ps.get_data('gate voltage')[0][0]/32768
         self.status_bar.set_gate_voltage(gate_voltage)
+
+    def peak_voltage_subscriber(self):
+        peak_voltage = 5.0 * self.ps.get_data('peak voltage')[0][0]/32768
+        self.status_bar.set_peak_voltage(peak_voltage)
 
     def mode_subscriber(self):
         mode = self.ps.get_data('mode')[0][0]
@@ -174,6 +181,7 @@ class CurveTracer(tk.Frame):
                 self.ps.subscribe('vi', self.vi_subscriber)
                 self.ps.subscribe('period', self.period_subscriber)
                 self.ps.subscribe('gate voltage', self.gate_voltage_subscriber)
+                self.ps.subscribe('peak voltage', self.peak_voltage_subscriber)
                 self.ps.subscribe('mode', self.mode_subscriber)
                 self.status_bar.set_port_status(True)
 
@@ -212,12 +220,13 @@ class CurveTracer(tk.Frame):
 
             if valid:
                 frequency = float(freq_str)
-                if frequency > self.max_freq:
-                    frequency = self.max_freq
-                elif frequency < self.min_freq:
-                    frequency = self.min_freq
 
                 period = int(self.instructions_per_second/(self.samples_per_waveform * frequency))
+
+                if period > self.max_period:
+                    period = self.max_period
+                elif period < self.min_period:
+                    period = self.min_period
 
                 self.ps.publish('period', [[period]], ['U16'])
                 print('set frequency to {:.1f}Hz'.format(frequency))
@@ -285,12 +294,61 @@ class CurveTracer(tk.Frame):
         btn = tk.Button(gate_voltage_selector_window, text='Set Gate Voltage', command=set_gate_voltage)
         btn.pack(side=tk.BOTTOM)
 
+    def select_amplitude_window(self):
+        vp_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
+        vp_selector_window.grab_set()
+        vp_selector_window.title('for(embed) - Voltage Setting Window')
+        vp_selector_window.iconbitmap('images/forembed.ico')
+
+        e = tk.Entry(vp_selector_window)
+        e.pack(side=tk.LEFT)
+
+        hz = tk.Message(vp_selector_window, text='Volts')
+        hz.pack(side=tk.LEFT)
+
+        def set_peak_voltage():
+            voltage_str = e.get()
+
+            # validate freq_str
+            valid = True
+            if not voltage_str:
+                valid = False
+
+            for c in voltage_str:
+                if c not in '0123456789.':
+                    valid = False
+
+            if valid:
+                gate_voltage = float(voltage_str)
+                if gate_voltage > self.max_vp:
+                    gate_voltage = self.max_vp
+                elif gate_voltage < self.min_vp:
+                    gate_voltage = self.min_vp
+
+                voltage = int(gate_voltage * 32768/5.0) - 1
+                if voltage < 0:
+                    voltage = 0
+
+                self.ps.publish('peak voltage', [[voltage]], ['S16'])
+                print('peak voltage set to {:.1f}V ({})'.format(gate_voltage, voltage))
+
+                vp_selector_window.destroy()
+
+        def return_function(event):
+            set_peak_voltage()
+
+        # bind the 'ENTER' key to the function
+        e.focus()
+        e.bind('<Return>', return_function)
+
+        btn = tk.Button(vp_selector_window, text='Set Gate Voltage', command=set_peak_voltage)
+        btn.pack(side=tk.BOTTOM)
+
     def send_cal_command(self):
         self.ps.publish('cal', [['']], ['STRING'])
 
     def select_output_mode(self):
         self.ps.publish('mode', [['']], ['STRING'])
-
 
 
 if __name__ == '__main__':
