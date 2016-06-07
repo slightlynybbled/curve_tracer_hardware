@@ -397,7 +397,7 @@ void _ISR _T1Interrupt(void){
         }
     }else{
         DAC1DAT = q15_mul(voltageScaler, q15_fast_sin(theta)) + 32768;
-        DAC2DAT = q15_mul(voltageScaler, q15_fast_sin(theta + 32768)) + 32768; // theta + 180 deg
+        DAC2DAT = 65535 - DAC1DAT; // theta + 180 deg
     }
     
     /* reset sampleIndex on every cycle */
