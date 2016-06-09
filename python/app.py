@@ -16,7 +16,7 @@ class CurveTracer(tk.Frame):
     widget_padding = 5
 
     serial_baud_rate = 57600
-    serial_update_period = 0.1
+    serial_update_period = 0.05
     port_str = ''
     port = serial.Serial(None)
 
@@ -139,14 +139,14 @@ class CurveTracer(tk.Frame):
     def monitor_dispatch(self):
 
         while True:
-            if (time.time() - self.last_comm_time) <= 1.0:
+            if (time.time() - self.last_comm_time) <= 2.0:
                 self.status_bar.set_comm_status(True)
                 self.status_bar.set_comm_text('active')
             else:
                 self.status_bar.set_comm_status(False)
                 self.status_bar.set_comm_text('idle')
 
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def select_port_window(self):
         port_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)

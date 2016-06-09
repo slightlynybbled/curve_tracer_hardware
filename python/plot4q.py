@@ -1,11 +1,13 @@
 import tkinter as tk
 
 
-class Plot4Q:
+class Plot4Q(tk.Canvas):
     DEFAULT_BG_COLOR = 'grey'
     DEFAULT_LINE_COLOR = '#39FF14'
 
     def __init__(self, master, x_pixels=200, y_pixels=200, xrange=1.0, yrange=1.0, grid=False, x_axis_label_str=None, y_axis_label_str=None):
+        self.parent = master
+
         self.width_px = x_pixels
         self.height_px = y_pixels
 
@@ -13,7 +15,7 @@ class Plot4Q:
         self.y_per_pixel = yrange/y_pixels
         self.grid = grid
 
-        self.plot = tk.Canvas(master, width=x_pixels, height=y_pixels, background=self.DEFAULT_BG_COLOR)
+        self.plot = tk.Canvas(self.parent, width=x_pixels, height=y_pixels, background=self.DEFAULT_BG_COLOR)
         self.plot.pack()
 
         self.draw_axes()

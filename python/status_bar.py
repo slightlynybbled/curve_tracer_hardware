@@ -22,7 +22,7 @@ class StatusBar:
         self.peak_voltage_label = tk.Label(self.parent, text="Vp: 0.0V", relief=tk.SUNKEN)
         self.peak_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
-        self.offset_voltage_label = tk.Label(self.parent, text="Vo: 0.0V", relief=tk.SUNKEN)
+        self.offset_voltage_label = tk.Label(self.parent, text="Offset: 0.0V", relief=tk.SUNKEN)
         self.offset_voltage_label.pack(side=tk.LEFT, expand=1, fill=tk.X)
 
         self.freq_label = tk.Label(self.parent, text='-Hz', relief=tk.SUNKEN)
