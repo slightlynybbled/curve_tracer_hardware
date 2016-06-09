@@ -103,12 +103,12 @@ int main(void) {
     
     /* add necessary tasks */    
     TASK_add(&DIS_process, 1);
-    TASK_add(&sendVI, 750);
-    TASK_add(&sendPeriod, 999);
-    TASK_add(&sendGateVoltage, 499);
-    TASK_add(&sendPeakVoltage, 498);
-    TASK_add(&sendOffsetVoltage, 497);
-    TASK_add(&sendMode, 496);
+    TASK_add(&sendVI, 500);
+    TASK_add(&sendPeriod, 499);
+    TASK_add(&sendGateVoltage, 498);
+    TASK_add(&sendPeakVoltage, 497);
+    TASK_add(&sendOffsetVoltage, 496);
+    TASK_add(&sendMode, 495);
     
     TASK_manage();
     
