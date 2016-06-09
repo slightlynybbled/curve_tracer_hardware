@@ -24,6 +24,8 @@ class Plot4Q(tk.Canvas):
         self.label_x_axis(x_axis_label_str)
         self.label_y_axis(y_axis_label_str)
 
+        self.plot_series_number = 0
+
     def remove_points(self):
         self.plot.delete('data_point')
 
@@ -34,11 +36,11 @@ class Plot4Q(tk.Canvas):
         # draw the primary axes
         x0, y0 = self.to_screen_coords(-self.width_px / 2, 0)
         x1, y1 = self.to_screen_coords(self.width_px / 2, 0)
-        x_axis = self.plot.create_line(x0, y0, x1, y1)
+        x_axis = self.plot.create_line(x0, y0, x1, y1, tag='x_axis')
 
         x0, y0 = self.to_screen_coords(0, self.height_px / 2)
         x1, y1 = self.to_screen_coords(0, -self.height_px / 2)
-        y_axis = self.plot.create_line(x0, y0, x1, y1)
+        y_axis = self.plot.create_line(x0, y0, x1, y1, tag='y-axis')
 
     def draw_grid(self):
         if self.grid:
@@ -112,7 +114,7 @@ class Plot4Q(tk.Canvas):
                               width=3.0,
                               tag='data_line')
 
-    def plot_point(self, point, point_format=None, fill=None):
+    def plot_point(self, point, point_format=None, fill=None, tag='data_point'):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
@@ -126,7 +128,7 @@ class Plot4Q(tk.Canvas):
                                           y_screen+point_width,
                                           outline=fill,
                                           fill=fill,
-                                          tag='data_point')
+                                          tag=tag)
 
         else:
             point_width = 2
@@ -142,7 +144,19 @@ class Plot4Q(tk.Canvas):
                                           y_screen + point_width,
                                           outline=fill,
                                           fill=fill,
-                                          tag='data_point')
+                                          tag=tag)
+
+    def scatter(self, list_of_points, color='#0000ff'):
+        self.plot_series_number += 1
+
+        new_tag = 'series' + str(self.plot_series_number)
+
+        for i, element in enumerate(list_of_points):
+            self.plot_point(list_of_points[i], fill=color, tag=new_tag)
+
+        if self.plot_series_number > 1:
+            old_tag = 'series' + str(self.plot_series_number - 1)
+            self.plot.delete(old_tag)
 
     def to_screen_coords(self, x, y):
         new_x = x + self.width_px/2

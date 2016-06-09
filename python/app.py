@@ -92,22 +92,25 @@ class CurveTracer(tk.Frame):
         dispatch_monitor_thread.start()
 
     def vi_subscriber(self):
-        self.plot.remove_points()
-
-        data_length = len(self.ps.get_data('vi')[0])
-        color_increment = int(256 / data_length)
-        red = 0 << 16
+        # create rgb  string
+        red = 0
+        green = 196
         blue = 0
-        base_color = red + blue
 
+        base_color = (red << 16) + (green << 8) + blue
+        color_str = '#' + hex(base_color)[2:].zfill(6)
+
+        # create a list of points as (x, y) tuples in preparation for plotting
+        list_of_points = []
         for i, element in enumerate(self.ps.get_data('vi')[0]):
-            if i < len(self.ps.get_data('vi')[0]):
-                color = base_color + (int(i * color_increment) << 8)
-                color_str = '#' + hex(color)[2:].zfill(6)
 
-                x1 = self.ps.get_data('vi')[0][i]
-                y1 = self.ps.get_data('vi')[1][i]
-                self.plot.plot_point((x1, y1), fill=color_str)
+            x1 = self.ps.get_data('vi')[0][i]
+            y1 = self.ps.get_data('vi')[1][i]
+
+            list_of_points.append((x1, y1))
+
+        # plot the points
+        self.plot.scatter(list_of_points, color=color_str)
 
         self.samples_per_waveform = len(self.ps.get_data('vi')[0])
         self.last_comm_time = time.time()
