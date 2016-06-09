@@ -1,6 +1,9 @@
 import tkinter as tk
+from tkinter import filedialog
+
 import threading
 import time
+import datetime
 import serial
 import serial.tools.list_ports
 import serialdispatch
@@ -33,6 +36,9 @@ class CurveTracer(tk.Frame):
 
     max_offset = 5.0
     min_offset = -5.0
+
+    volts_per_bit = 5.0/32768
+    milli_amps_per_bit = 25.0/16384
 
     def __init__(self, parent):
         self.parent = parent
@@ -78,6 +84,8 @@ class CurveTracer(tk.Frame):
 
         # ----------------------------
         # add the shortcut bar buttons and commands
+        self.shortcut_bar.add_btn(image_path='images/btn-save.png', command=self.save_waveform)
+        self.shortcut_bar.add_btn(image_path='images/btn-load.png', command=self.load_waveform)
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
@@ -150,6 +158,29 @@ class CurveTracer(tk.Frame):
                 self.status_bar.set_comm_text('idle')
 
             time.sleep(0.1)
+
+    def save_waveform(self):
+        f = filedialog.asksaveasfile(mode='w', defaultextension='.csv')
+        print('saving waveform to ', f)
+
+        f.write('Curve Tracer Export\n')
+        f.write('{:%Y-%m-%d %H:%M:%S}\n'.format(datetime.datetime.now()))
+        f.write('type: raw-export\n\n')
+
+        f.write('voltage (int),current(int),voltage(Volts),current(mA)')
+
+        for point in self.plot.get_scatter():
+            x, y = point
+            f.write(str(x) + ',' + str(y) + ',')
+            f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
+
+        f.close()
+
+    def load_waveform(self):
+        f = filedialog.askopenfile(mode='r', defaultextension='.csv')
+
+        print(f.read())
+        f.close()
 
     def select_port_window(self):
         port_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)

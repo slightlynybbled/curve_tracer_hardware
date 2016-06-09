@@ -1,4 +1,5 @@
 import tkinter as tk
+from copy import deepcopy
 
 
 class Plot4Q(tk.Canvas):
@@ -25,6 +26,8 @@ class Plot4Q(tk.Canvas):
         self.label_y_axis(y_axis_label_str)
 
         self.plot_series_number = 0
+
+        self.current_points = []
 
     def remove_points(self):
         self.plot.delete('data_point')
@@ -157,6 +160,11 @@ class Plot4Q(tk.Canvas):
         if self.plot_series_number > 1:
             old_tag = 'series' + str(self.plot_series_number - 1)
             self.plot.delete(old_tag)
+
+        self.current_points = deepcopy(list_of_points)
+
+    def get_scatter(self):
+        return self.current_points
 
     def to_screen_coords(self, x, y):
         new_x = x + self.width_px/2
