@@ -50,6 +50,8 @@ void initPwm(void);
 void initAdc(void);
 void setDutyCyclePWM1(q15_t dutyCycle);
 void setDutyCyclePWM2(q15_t dutyCycle);
+void setDutyCyclePWM3(q15_t dutyCycle);
+void setDutyCyclePWM3(q15_t dutyCycle);
 q15_t getDutyCyclePWM2(void);
 
 void sendVI(void);
@@ -268,6 +270,26 @@ void setDutyCyclePWM2(q15_t dutyCycle){
     return;
 }
 
+void setDutyCyclePWM3(q15_t dutyCycle){
+    CCP4RB = q15_mul(dutyCycle, CCP4PRL);
+    
+    /* when CCPxRB == 0, PWM doesn't update properly */
+    if(CCP4RB < 2)
+        CCP4RB = 2;
+    else if(CCP4RB >= CCP4PRL)
+        CCP5RB = CCP4PRL - 1;
+}
+
+void setDutyCyclePWM4(q15_t dutyCycle){
+    CCP5RB = q15_mul(dutyCycle, CCP5PRL);
+    
+    /* when CCPxRB == 0, PWM doesn't update properly */
+    if(CCP5RB < 2)
+        CCP5RB = 2;
+    else if(CCP5RB >= CCP5PRL)
+        CCP5RB = CCP5PRL - 1;
+}
+
 q15_t getDutyCyclePWM2(void){
     return q15_div((q15_t)CCP2RB, (q15_t)CCP2PRL);
 }
@@ -331,26 +353,35 @@ void initPwm(void){
     // use OC1C (pin 21, RB10) and OC2A (pin 22, RB11)
     DIO_makeDigital(DIO_PORT_B, 10);
     DIO_makeDigital(DIO_PORT_B, 11);
+    DIO_makeDigital(DIO_PORT_B, 7);
+    DIO_makeDigital(DIO_PORT_B, 9);
     
-    /* Initialize MCCP module
-     *  */
+    /* Initialize MCCP/SCCP modules */
+    
     /* period registers */
-    CCP1PRH = CCP2PRH = 0;
-    CCP1PRL = CCP2PRL = 1024;
+    CCP1PRH = CCP2PRH = CCP4PRH = CCP5PRH = 0;
+    CCP1PRL = CCP2PRL = CCP4PRL = CCP5PRL = 1024;
     
-    CCP1CON1L = CCP2CON1L = 0x0005;
-    CCP1CON1H = CCP2CON1H = 0x0000;
-    CCP1CON2L = CCP2CON2L = 0x0000;
+    CCP1CON1L = CCP2CON1L = CCP4CON1L = CCP5CON1L = 0x0005;
+    CCP1CON1H = CCP2CON1H = CCP4CON1H = CCP5CON1H = 0x0000;
+    CCP1CON2L = CCP2CON2L = CCP4CON2L = CCP5CON2L = 0x0000;
+    
     CCP1CON2H = 0x8400; // enable output OC1C
     CCP2CON2H = 0x8100; // enable output 0C2A
-    CCP1CON3L = CCP2CON3L = 0;  // dead time disabled
-    CCP1CON3H = CCP2CON3H = 0x0000;
+    CCP4CON2H = 0x8100; // enable output OC4
+    CCP5CON2H = 0x8100; // enable output OC5
     
-    CCP1CON1Lbits.CCPON = CCP2CON1Lbits.CCPON = 1;
+    CCP1CON3L = CCP2CON3L = 0;  // dead time disabled
+    CCP1CON3H = CCP2CON3H = CCP4CON3H = CCP5CON3H = 0x0000;
+    
+    CCP1CON1Lbits.CCPON = 
+            CCP2CON1Lbits.CCPON = 
+            CCP4CON1Lbits.CCPON = 
+            CCP5CON1Lbits.CCPON = 1;
     
     /* duty cycle registers */
-    CCP1RA = CCP2RA = 0;
-    CCP1RB = CCP2RB = 0;
+    CCP1RA = CCP2RA = CCP4RA = CCP5RA = 0;
+    CCP1RB = CCP2RB = CCP4RB = CCP5RB = 0;
     
     return;
 }
@@ -423,6 +454,10 @@ void _ISR _T1Interrupt(void){
         }else{
             DAC2DAT = 32768 + (uint16_t)dac2;
         }
+        
+        q15_t dc = (q15_t)(DAC1DAT >> 1);
+        setDutyCyclePWM3(dc);
+        setDutyCyclePWM4(dc);
     }
     
     /* reset sampleIndex on every cycle */
