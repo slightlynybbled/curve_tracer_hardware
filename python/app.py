@@ -157,9 +157,9 @@ class CurveTracer(tk.Frame):
         port_selector_window.title('for(embed) - Serial Port Selector')
         port_selector_window.iconbitmap('images/forembed.ico')
 
-        message = "Select a port from the list: "
-        msg = tk.Message(port_selector_window, text=message)
-        msg.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
+        txt = "Select a port from the list: "
+        port_label = tk.Label(port_selector_window, text=txt)
+        port_label.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
 
         ports = serial.tools.list_ports.comports()
         port_list = []
@@ -214,8 +214,8 @@ class CurveTracer(tk.Frame):
         e = tk.Entry(gate_voltage_selector_window)
         e.pack(side=tk.LEFT)
 
-        hz = tk.Message(gate_voltage_selector_window, text='Volts')
-        hz.pack(side=tk.LEFT)
+        volts_label = tk.Label(gate_voltage_selector_window, text='Volts')
+        volts_label.pack(side=tk.LEFT)
 
         def set_gate_voltage():
             gate_voltage_str = e.get()
