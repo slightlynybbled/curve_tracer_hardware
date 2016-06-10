@@ -1,5 +1,6 @@
 import tkinter as tk
 from copy import deepcopy
+import time
 
 
 class Plot4Q(tk.Canvas):
@@ -27,7 +28,7 @@ class Plot4Q(tk.Canvas):
 
         self.plot_series_number = 0
 
-        self.current_points = []
+        self.current_points = {}
 
     def remove_points(self):
         self.plot.delete('data_point')
@@ -83,17 +84,17 @@ class Plot4Q(tk.Canvas):
 
     def label_x_axis(self, label):
         if label:
-            self.plot.create_text((self.width_px - 5, (self.height_px/2)+5), text=label, anchor=tk.NE)
+            self.plot.create_text((self.width_px - 5, (self.height_px/2)+5), text=label, anchor=tk.NE, tag='x-axis-label')
         else:
             pass
 
     def label_y_axis(self, label):
         if label:
-            self.plot.create_text((self.width_px/2 + 5, 5), text=label, anchor=tk.NW)
+            self.plot.create_text((self.width_px/2 + 5, 5), text=label, anchor=tk.NW, tag='y-axis-label')
         else:
             pass
 
-    def plot_line(self, first_point, second_point, point_format=None, fill=None):
+    def plot_line(self, first_point, second_point, point_format=None, fill=None, tag='data_line'):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
@@ -115,7 +116,7 @@ class Plot4Q(tk.Canvas):
                               y1_screen,
                               fill=fill,
                               width=3.0,
-                              tag='data_line')
+                              tag=tag)
 
     def plot_point(self, point, point_format=None, fill=None, tag='data_point'):
         if not fill:
@@ -162,20 +163,24 @@ class Plot4Q(tk.Canvas):
 
             for item_tag in del_list:
                 self.plot.delete(item_tag)
+                print('deleted tags: ', item_tag)
 
         else:
             ''' create the new points then delete the old points '''
-
+            points = deepcopy(list_of_points)
             self.plot_series_number += 1
 
             new_tag = tag + str(self.plot_series_number)
 
-            for i, element in enumerate(list_of_points):
-                self.plot_point(list_of_points[i], fill=color, tag=new_tag)
+            for point in points:
+                self.plot_point(point, fill=color, tag=new_tag)
 
+            canvas_tags = []
             del_list = []
             for e in self.plot.find_all():
                 for item_tag in self.plot.gettags(e):
+                    if item_tag not in canvas_tags:
+                        canvas_tags.append(item_tag)
                     if tag in item_tag and item_tag != new_tag:
                         if item_tag not in del_list:
                             del_list.append(item_tag)
@@ -183,10 +188,10 @@ class Plot4Q(tk.Canvas):
             for item_tag in del_list:
                 self.plot.delete(item_tag)
 
-            self.current_points = deepcopy(list_of_points)
+            self.current_points[tag] = deepcopy(list_of_points)
 
-    def get_scatter(self):
-        return self.current_points
+    def get_scatter(self, tag='current'):
+        return self.current_points[tag]
 
     def to_screen_coords(self, x, y):
         new_x = x + self.width_px/2

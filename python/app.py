@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import csv
+from copy import deepcopy
 
 import threading
 import time
@@ -95,6 +96,13 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/btn-waveform.png', command=self.setup_waveform_window)
 
         # ----------------------------
+        # initialize the canvas interactive objects
+        self.live_points = []
+        self.loaded_points = []
+        self.plot_data_changed = False
+        self.parent.after(50, self.update_plots)
+
+        # ----------------------------
         # create the thread that will monitor the comm channel and display the status
         self.last_comm_time = 0
         dispatch_monitor_thread = threading.Thread(target=self.monitor_dispatch, args=())
@@ -102,14 +110,6 @@ class CurveTracer(tk.Frame):
         dispatch_monitor_thread.start()
 
     def vi_subscriber(self):
-        # create rgb  string
-        red = 0
-        green = 196
-        blue = 0
-
-        base_color = (red << 16) + (green << 8) + blue
-        color_str = '#' + hex(base_color)[2:].zfill(6)
-
         # create a list of points as (x, y) tuples in preparation for plotting
         list_of_points = []
         for i, element in enumerate(self.ps.get_data('vi')[0]):
@@ -119,8 +119,8 @@ class CurveTracer(tk.Frame):
 
             list_of_points.append((x1, y1))
 
-        # plot the points
-        self.plot.scatter(list_of_points, color=color_str)
+        self.live_points = deepcopy(list_of_points)
+        self.plot_data_changed = True
 
         self.samples_per_waveform = len(self.ps.get_data('vi')[0])
         self.last_comm_time = time.time()
@@ -161,7 +161,23 @@ class CurveTracer(tk.Frame):
 
             time.sleep(0.1)
 
+    def update_plots(self):
+        if self.plot_data_changed:
+            # all interactions with the canvas should be in one place
+            # plot the live points points
+            self.plot.scatter(self.live_points, color='#00c400', tag='live')
+
+            if self.loaded_points:
+                self.plot.scatter(self.loaded_points, color='#ff00ff', tag='loaded')
+            else:
+                self.plot.scatter(tag='loaded', erase=True)
+
+        # re-register this function
+        self.parent.after(50, self.update_plots)
+
     def save_waveform(self):
+        points = self.plot.get_scatter(tag='live')
+
         f = filedialog.asksaveasfile(mode='w', defaultextension='.csv')
         print('saving waveform to ', f)
 
@@ -172,7 +188,7 @@ class CurveTracer(tk.Frame):
 
             f.write('voltage (int),current(int),voltage(Volts),current(mA)\n')
 
-            for point in self.plot.get_scatter():
+            for point in points:
                 x, y = point
                 f.write(str(x) + ',' + str(y) + ',')
                 f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
@@ -181,27 +197,28 @@ class CurveTracer(tk.Frame):
 
     def load_waveform(self):
 
-
         f = filedialog.askopenfile(mode='r', defaultextension='.csv')
 
         if f:
-            points = []
+            self.loaded_points = []
             csv_reader = csv.reader(f, delimiter=',')
             for row in csv_reader:
                 try:
                     x = int(row[0])
                     y = int(row[1])
-                    points.append((x, y))
+                    self.loaded_points.append((x, y))
+
+                    self.plot_data_changed = True
 
                 except:
                     pass
 
-            self.plot.scatter(list_of_points=points, color='#ff00ff', tag='loaded')
-
             f.close()
 
     def clear_waveforms(self):
-        self.plot.scatter(tag='loaded', erase=True)
+
+        self.loaded_points = []
+        self.plot_data_changed = True
 
     def select_port_window(self):
         port_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
