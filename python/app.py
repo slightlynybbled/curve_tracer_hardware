@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
+import csv
 
 import threading
 import time
@@ -86,6 +87,7 @@ class CurveTracer(tk.Frame):
         # add the shortcut bar buttons and commands
         self.shortcut_bar.add_btn(image_path='images/btn-save.png', command=self.save_waveform)
         self.shortcut_bar.add_btn(image_path='images/btn-load.png', command=self.load_waveform)
+        self.shortcut_bar.add_btn(image_path='images/btn-erase.png', command=self.clear_waveforms)
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
@@ -163,24 +165,43 @@ class CurveTracer(tk.Frame):
         f = filedialog.asksaveasfile(mode='w', defaultextension='.csv')
         print('saving waveform to ', f)
 
-        f.write('Curve Tracer Export\n')
-        f.write('{:%Y-%m-%d %H:%M:%S}\n'.format(datetime.datetime.now()))
-        f.write('type: raw-export\n\n')
+        if f:
+            f.write('Curve Tracer Export\n')
+            f.write('{:%Y-%m-%d %H:%M:%S}\n'.format(datetime.datetime.now()))
+            f.write('type: raw-export\n\n')
 
-        f.write('voltage (int),current(int),voltage(Volts),current(mA)')
+            f.write('voltage (int),current(int),voltage(Volts),current(mA)\n')
 
-        for point in self.plot.get_scatter():
-            x, y = point
-            f.write(str(x) + ',' + str(y) + ',')
-            f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
+            for point in self.plot.get_scatter():
+                x, y = point
+                f.write(str(x) + ',' + str(y) + ',')
+                f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
 
-        f.close()
+            f.close()
 
     def load_waveform(self):
+
+
         f = filedialog.askopenfile(mode='r', defaultextension='.csv')
 
-        print(f.read())
-        f.close()
+        if f:
+            points = []
+            csv_reader = csv.reader(f, delimiter=',')
+            for row in csv_reader:
+                try:
+                    x = int(row[0])
+                    y = int(row[1])
+                    points.append((x, y))
+
+                except:
+                    pass
+
+            self.plot.scatter(list_of_points=points, color='#ff00ff', tag='loaded')
+
+            f.close()
+
+    def clear_waveforms(self):
+        self.plot.scatter(tag='loaded', erase=True)
 
     def select_port_window(self):
         port_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)

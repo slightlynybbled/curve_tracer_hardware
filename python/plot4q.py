@@ -58,28 +58,28 @@ class Plot4Q(tk.Canvas):
                 grid_y = self.height_px / 2
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x1, y2 = self.to_screen_coords(grid_x, -grid_y)
-                self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple)
+                self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple, tag='grid')
 
                 # top to bottom lines, left quadrants
                 grid_x = -(i + 1) * x_grid_interval_px
                 grid_y = self.height_px / 2
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x1, y2 = self.to_screen_coords(grid_x, -grid_y)
-                self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple)
+                self.plot.create_line(x1, y1, x1, y2, dash=dash_tuple, tag='grid')
 
                 # left-to-right lines, upper quadrants
                 grid_x = self.width_px / 2
                 grid_y = (i + 1) * y_grid_interval_px
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x2, y1 = self.to_screen_coords(-grid_x, grid_y)
-                self.plot.create_line(x1, y1, x2, y1, dash=dash_tuple)
+                self.plot.create_line(x1, y1, x2, y1, dash=dash_tuple, tag='grid')
 
                 # left-to-right lines, lower quadrants
                 grid_x = self.width_px / 2
                 grid_y = -(i + 1) * y_grid_interval_px
                 x1, y1 = self.to_screen_coords(grid_x, grid_y)
                 x2, y1 = self.to_screen_coords(-grid_x, grid_y)
-                self.plot.create_line(x1, y1, x2, y1, dash=dash_tuple)
+                self.plot.create_line(x1, y1, x2, y1, dash=dash_tuple, tag='grid')
 
     def label_x_axis(self, label):
         if label:
@@ -149,19 +149,41 @@ class Plot4Q(tk.Canvas):
                                           fill=fill,
                                           tag=tag)
 
-    def scatter(self, list_of_points, color='#0000ff'):
-        self.plot_series_number += 1
+    def scatter(self, list_of_points=[], color='#0000ff', tag='current', erase=False):
+        if erase:
+            # if erase is True, then we will delete all tags containing the
+            # prefix contained in 'tag'.  For instance, if tag == 'current',
+            # then we will delete 'current0', 'current1', ...
+            del_list = []
+            for e in self.plot.find_all():
+                for item_tag in self.plot.gettags(e):
+                    if tag in item_tag and item_tag not in del_list:
+                        del_list.append(item_tag)
 
-        new_tag = 'series' + str(self.plot_series_number)
+            for item_tag in del_list:
+                self.plot.delete(item_tag)
 
-        for i, element in enumerate(list_of_points):
-            self.plot_point(list_of_points[i], fill=color, tag=new_tag)
+        else:
+            ''' create the new points then delete the old points '''
 
-        if self.plot_series_number > 1:
-            old_tag = 'series' + str(self.plot_series_number - 1)
-            self.plot.delete(old_tag)
+            self.plot_series_number += 1
 
-        self.current_points = deepcopy(list_of_points)
+            new_tag = tag + str(self.plot_series_number)
+
+            for i, element in enumerate(list_of_points):
+                self.plot_point(list_of_points[i], fill=color, tag=new_tag)
+
+            del_list = []
+            for e in self.plot.find_all():
+                for item_tag in self.plot.gettags(e):
+                    if tag in item_tag and item_tag != new_tag:
+                        if item_tag not in del_list:
+                            del_list.append(item_tag)
+
+            for item_tag in del_list:
+                self.plot.delete(item_tag)
+
+            self.current_points = deepcopy(list_of_points)
 
     def get_scatter(self):
         return self.current_points
@@ -176,6 +198,10 @@ if __name__ == "__main__":
     # initialize tk items for display
     root = tk.Tk()
     root.title("for(embed) - Curve Tracer Viewer")
-    root.iconbitmap('forembed.ico')
-    app = Application(root)
+    app = Plot4Q(root)
+
+    points = [(0,0), (10,10), (20,20)]
+    app.scatter(points)
+    app.scatter(erase=True)
+
     root.mainloop()
