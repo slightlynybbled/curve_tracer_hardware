@@ -150,45 +150,40 @@ class Plot4Q(tk.Canvas):
                                           fill=fill,
                                           tag=tag)
 
-    def scatter(self, list_of_points=[], color='#0000ff', tag='current', erase=False):
-        if erase:
-            # if erase is True, then we will delete all tags containing the
-            # prefix contained in 'tag'.  For instance, if tag == 'current',
-            # then we will delete 'current0', 'current1', ...
-            del_list = []
-            for e in self.plot.find_all():
-                for item_tag in self.plot.gettags(e):
-                    if tag in item_tag and item_tag not in del_list:
+    def scatter(self, list_of_points=[], color='#0000ff', tag='current'):
+        ''' create the new points then delete the old points '''
+        self.plot_series_number += 1
+
+        new_tag = tag + str(self.plot_series_number)
+
+        for point in list_of_points:
+            self.plot_point(point, fill=color, tag=new_tag)
+
+        del_list = []
+        for e in self.plot.find_all():
+            for item_tag in self.plot.gettags(e):
+                if tag in item_tag and item_tag != new_tag:
+                    if item_tag not in del_list:
                         del_list.append(item_tag)
 
-            for item_tag in del_list:
-                self.plot.delete(item_tag)
-                print('deleted tags: ', item_tag)
+        for item_tag in del_list:
+            self.plot.delete(item_tag)
 
-        else:
-            ''' create the new points then delete the old points '''
-            points = deepcopy(list_of_points)
-            self.plot_series_number += 1
+        self.current_points[tag] = deepcopy(list_of_points)
 
-            new_tag = tag + str(self.plot_series_number)
+    def remove_scatter(self, tag='current'):
+        # if erase is True, then we will delete all tags containing the
+        # prefix contained in 'tag'.  For instance, if tag == 'current',
+        # then we will delete 'current0', 'current1', ...
+        del_list = []
+        for e in self.plot.find_all():
+            for item_tag in self.plot.gettags(e):
+                if tag in item_tag and item_tag not in del_list:
+                    del_list.append(item_tag)
 
-            for point in points:
-                self.plot_point(point, fill=color, tag=new_tag)
-
-            canvas_tags = []
-            del_list = []
-            for e in self.plot.find_all():
-                for item_tag in self.plot.gettags(e):
-                    if item_tag not in canvas_tags:
-                        canvas_tags.append(item_tag)
-                    if tag in item_tag and item_tag != new_tag:
-                        if item_tag not in del_list:
-                            del_list.append(item_tag)
-
-            for item_tag in del_list:
-                self.plot.delete(item_tag)
-
-            self.current_points[tag] = deepcopy(list_of_points)
+        for item_tag in del_list:
+            self.plot.delete(item_tag)
+            print('deleted tags: ', item_tag)
 
     def get_scatter(self, tag='current'):
         return self.current_points[tag]

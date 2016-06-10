@@ -170,10 +170,10 @@ class CurveTracer(tk.Frame):
             if self.loaded_points:
                 self.plot.scatter(self.loaded_points, color='#ff00ff', tag='loaded')
             else:
-                self.plot.scatter(tag='loaded', erase=True)
+                self.plot.remove_scatter(tag='loaded')
 
         # re-register this function
-        self.parent.after(50, self.update_plots)
+        self.parent.after(100, self.update_plots)
 
     def save_waveform(self):
         points = self.plot.get_scatter(tag='live')
