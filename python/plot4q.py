@@ -1,6 +1,5 @@
 import tkinter as tk
-from copy import deepcopy
-import time
+from PIL import Image, ImageTk
 
 
 class Plot4Q(tk.Canvas):
@@ -29,6 +28,8 @@ class Plot4Q(tk.Canvas):
         self.plot_series_number = 0
 
         self.current_points = {}
+        self.green_dot = ImageTk.PhotoImage(Image.open("images/dot-green.png"))
+        self.blue_dot = ImageTk.PhotoImage(Image.open("images/dot-blue.png"))
 
     def remove_points(self):
         self.plot.delete('data_point')
@@ -118,7 +119,7 @@ class Plot4Q(tk.Canvas):
                               width=3.0,
                               tag=tag)
 
-    def plot_point(self, point, point_format=None, fill=None, tag='data_point'):
+    def plot_point(self, point, point_format=None, fill='green', tag='data_point'):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
@@ -135,20 +136,17 @@ class Plot4Q(tk.Canvas):
                                           tag=tag)
 
         else:
-            point_width = 2
             x, y = point
 
             x /= self.x_per_pixel
             y /= self.y_per_pixel
 
             x_screen, y_screen = self.to_screen_coords(x, y)
-            point = self.plot.create_oval(x_screen - point_width,
-                                          y_screen - point_width,
-                                          x_screen + point_width,
-                                          y_screen + point_width,
-                                          outline=fill,
-                                          fill=fill,
-                                          tag=tag)
+
+            if fill == 'blue':
+                self.plot.create_image((x_screen, y_screen), image=self.blue_dot, tag=tag)
+            else:
+                self.plot.create_image((x_screen, y_screen), image=self.green_dot, tag=tag)
 
     def scatter(self, list_of_points=[], color='#0000ff', tag='current'):
         ''' create the new points then delete the old points '''
@@ -169,7 +167,7 @@ class Plot4Q(tk.Canvas):
         for item_tag in del_list:
             self.plot.delete(item_tag)
 
-        self.current_points[tag] = deepcopy(list_of_points)
+        self.current_points[tag] = list_of_points
 
     def remove_scatter(self, tag='current'):
         # if erase is True, then we will delete all tags containing the

@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 import csv
-from copy import deepcopy
 
 import threading
 import time
@@ -119,7 +118,7 @@ class CurveTracer(tk.Frame):
 
             list_of_points.append((x1, y1))
 
-        self.live_points = deepcopy(list_of_points)
+        self.live_points = list_of_points
         self.plot_data_changed = True
 
         self.samples_per_waveform = len(self.ps.get_data('vi')[0])
@@ -165,15 +164,18 @@ class CurveTracer(tk.Frame):
         if self.plot_data_changed:
             # all interactions with the canvas should be in one place
             # plot the live points points
-            self.plot.scatter(self.live_points, color='#00c400', tag='live')
+            if self.live_points:
+                self.plot.scatter(self.live_points, color='green', tag='live')
 
             if self.loaded_points:
-                self.plot.scatter(self.loaded_points, color='#ff00ff', tag='loaded')
+                self.plot.scatter(self.loaded_points, color='blue', tag='loaded')
             else:
                 self.plot.remove_scatter(tag='loaded')
 
+            self.plot_data_changed = False
+
         # re-register this function
-        self.parent.after(100, self.update_plots)
+        self.parent.after(200, self.update_plots)
 
     def save_waveform(self):
         points = self.plot.get_scatter(tag='live')
