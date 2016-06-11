@@ -180,26 +180,27 @@ class CurveTracer(tk.Frame):
     def save_waveform(self):
         points = self.plot.get_scatter(tag='live')
 
-        f = filedialog.asksaveasfile(mode='w', defaultextension='.csv')
-        print('saving waveform to ', f)
+        if points:
+            f = filedialog.asksaveasfile(mode='w', defaultextension='.csv', filetypes=[('comma-separated values', '.csv')])
+            print('saving waveform to ', f)
 
-        if f:
-            f.write('Curve Tracer Export\n')
-            f.write('{:%Y-%m-%d %H:%M:%S}\n'.format(datetime.datetime.now()))
-            f.write('type: raw-export\n\n')
+            if f:
+                f.write('Curve Tracer Export\n')
+                f.write('{:%Y-%m-%d %H:%M:%S}\n'.format(datetime.datetime.now()))
+                f.write('type: raw-export\n\n')
 
-            f.write('voltage (int),current(int),voltage(Volts),current(mA)\n')
+                f.write('voltage (int),current(int),voltage(Volts),current(mA)\n')
 
-            for point in points:
-                x, y = point
-                f.write(str(x) + ',' + str(y) + ',')
-                f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
+                for point in points:
+                    x, y = point
+                    f.write(str(x) + ',' + str(y) + ',')
+                    f.write(str(x * self.volts_per_bit) + ',' + str(y * self.milli_amps_per_bit) + '\n')
 
-            f.close()
+                f.close()
 
     def load_waveform(self):
 
-        f = filedialog.askopenfile(mode='r', defaultextension='.csv')
+        f = filedialog.askopenfile(mode='r', defaultextension='.csv',  filetypes=[('comma-separated values', '.csv')])
 
         if f:
             self.loaded_points = []
