@@ -123,8 +123,9 @@ class Plot4Q(tk.Canvas):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
+        point_width = 2
+
         if point_format == 'px':
-            point_width = 2
             x, y = point
             x_screen, y_screen = self.to_screen_coords(x, y)
             point = self.plot.create_oval(x_screen-point_width,
@@ -143,10 +144,13 @@ class Plot4Q(tk.Canvas):
 
             x_screen, y_screen = self.to_screen_coords(x, y)
 
-            if fill == 'blue':
-                self.plot.create_image((x_screen, y_screen), image=self.blue_dot, tag=tag)
-            else:
-                self.plot.create_image((x_screen, y_screen), image=self.green_dot, tag=tag)
+            point = self.plot.create_oval(x_screen - point_width,
+                                          y_screen - point_width,
+                                          x_screen + point_width,
+                                          y_screen + point_width,
+                                          outline=fill,
+                                          fill=fill,
+                                          tag=tag)
 
     def scatter(self, list_of_points=[], color='#0000ff', tag='current'):
         ''' create the new points then delete the old points '''
