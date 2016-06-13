@@ -119,57 +119,58 @@ class Plot4Q(tk.Canvas):
                               width=3.0,
                               tag=tag)
 
-    def plot_point(self, point, point_format=None, fill='green', tag='data_point'):
+    def plot_point(self, point, fill='green', tag='data_point'):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
         point_width = 2
 
-        if point_format == 'px':
-            x, y = point
-            x_screen, y_screen = self.to_screen_coords(x, y)
-            point = self.plot.create_oval(x_screen-point_width,
-                                          y_screen-point_width,
-                                          x_screen+point_width,
-                                          y_screen+point_width,
-                                          outline=fill,
-                                          fill=fill,
-                                          tag=tag)
+        # find the location of the point on the canvas
+        x, y = point
+
+        x /= self.x_per_pixel
+        y /= self.y_per_pixel
+
+        x_screen, y_screen = self.to_screen_coords(x, y)
+
+        point_width = 2
+
+        x0 = x_screen - point_width
+        y0 = y_screen - point_width
+        x1 = x_screen + point_width
+        y1 = y_screen + point_width
+
+        # if the tag exists, then move the point, else create the point
+        point_ids = self.plot.find_withtag(tag)
+
+        if point_ids != ():
+            point_id = point_ids[0]
+
+            location = self.plot.coords(point_id)
+            current_x = location[0]
+            current_y = location[1]
+
+            move_x = x_screen - current_x
+            move_y = y_screen - current_y
+
+            self.plot.move(point_id, move_x, move_y)
 
         else:
-            x, y = point
-
-            x /= self.x_per_pixel
-            y /= self.y_per_pixel
-
-            x_screen, y_screen = self.to_screen_coords(x, y)
-
-            point = self.plot.create_oval(x_screen - point_width,
-                                          y_screen - point_width,
-                                          x_screen + point_width,
-                                          y_screen + point_width,
+            point = self.plot.create_oval(x0,
+                                          y0,
+                                          x1,
+                                          y1,
                                           outline=fill,
                                           fill=fill,
                                           tag=tag)
 
     def scatter(self, list_of_points=[], color='#0000ff', tag='current'):
-        ''' create the new points then delete the old points '''
-        self.plot_series_number += 1
+        """ create the new points then delete the old points """
+        num_of_points = len(list_of_points)
 
-        new_tag = tag + str(self.plot_series_number)
-
-        for point in list_of_points:
+        for i, point in enumerate(list_of_points):
+            new_tag = tag + str(i)
             self.plot_point(point, fill=color, tag=new_tag)
-
-        del_list = []
-        for e in self.plot.find_all():
-            for item_tag in self.plot.gettags(e):
-                if tag in item_tag and item_tag != new_tag:
-                    if item_tag not in del_list:
-                        del_list.append(item_tag)
-
-        for item_tag in del_list:
-            self.plot.delete(item_tag)
 
         self.current_points[tag] = list_of_points
 
