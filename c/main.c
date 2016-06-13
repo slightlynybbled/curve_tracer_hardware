@@ -462,7 +462,7 @@ void _ISR _T1Interrupt(void){
     
     /* reset sampleIndex on every cycle */
     if(theta == 0){
-        if((xmitActive == 0) && (xmitSent == 1)){
+        if((xmitActive == 0) && (xmitSent == 1) && (countUp)){
             sampleIndex = 0;
             xmitSent = 0;
         }
