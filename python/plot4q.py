@@ -123,8 +123,6 @@ class Plot4Q(tk.Canvas):
         if not fill:
             fill = self.DEFAULT_LINE_COLOR
 
-        point_width = 2
-
         # find the location of the point on the canvas
         x, y = point
 
