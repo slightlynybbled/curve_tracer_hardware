@@ -102,6 +102,7 @@ class CurveTracer(tk.Frame):
         self.loaded_points = []
         self.plot_data_changed = False
         self.parent.after(50, self.update_plots)
+        self.paused = False
 
         # ----------------------------
         # create the thread that will monitor the comm channel and display the status
@@ -163,7 +164,7 @@ class CurveTracer(tk.Frame):
             time.sleep(0.1)
 
     def update_plots(self):
-        if self.plot_data_changed:
+        if self.plot_data_changed and not self.paused:
             # all interactions with the canvas should be in one place
             # plot the live points points
             if self.live_points:
@@ -279,10 +280,10 @@ class CurveTracer(tk.Frame):
         btn_sel.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
 
     def pause_plot(self):
-        pass
+        self.paused = True
 
     def run_plot(self):
-        pass
+        self.paused = False
 
     def select_gate_voltage_window(self):
         gate_voltage_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
