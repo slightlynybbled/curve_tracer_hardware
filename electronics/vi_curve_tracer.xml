@@ -1,0 +1,1284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>C:/code/curve_tracer/electronics/vi_curve_tracer.sch</source>
+    <date>6/14/2016 9:20:26 AM</date>
+    <tool>Eeschema 4.0.1-stable</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Curve Tracer</title>
+        <company>for(embed)</company>
+        <rev>1.0</rev>
+        <date>2016-06-06</date>
+        <source>vi_curve_tracer.sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="U2">
+      <value>pic24f08km202</value>
+      <footprint>kicad_pcb:SSOP-28</footprint>
+      <fields>
+        <field name="Manufacturer">Microchip, Inc.</field>
+        <field name="MPN">PIC24FV16KM202</field>
+        <field name="Description">Microcontroller</field>
+      </fields>
+      <libsource lib="custom" part="pic24f08km202"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31191</tstamp>
+    </comp>
+    <comp ref="U3">
+      <value>ft230x</value>
+      <footprint>kicad_pcb:SOIC-16</footprint>
+      <fields>
+        <field name="Manufacturer">FTDI</field>
+        <field name="Description">USB-to-UART, IC, SSOP-16</field>
+        <field name="MPN">FT230XS-R</field>
+      </fields>
+      <libsource lib="custom" part="ft230x"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B311DA</tstamp>
+    </comp>
+    <comp ref="P1">
+      <value>CONN_01X05</value>
+      <footprint>kicad_pcb:CONN_1x5_0.1in</footprint>
+      <fields>
+        <field name="Description">programming header</field>
+      </fields>
+      <libsource lib="conn" part="CONN_01X05"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B3154B</tstamp>
+    </comp>
+    <comp ref="R7">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31AE4</tstamp>
+    </comp>
+    <comp ref="R6">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31B64</tstamp>
+    </comp>
+    <comp ref="C2">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31D74</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31E2B</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B31E59</tstamp>
+    </comp>
+    <comp ref="R9">
+      <value>27</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Manufacturer">Yageo</field>
+        <field name="MPN">RC0603FR-0727RL</field>
+        <field name="Description">resistor, 27ohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B32D81</tstamp>
+    </comp>
+    <comp ref="R10">
+      <value>27</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Manufacturer">Yageo</field>
+        <field name="MPN">RC0603FR-0727RL</field>
+        <field name="Description">resistor, 27ohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B32E59</tstamp>
+    </comp>
+    <comp ref="C5">
+      <value>47pF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Manufacturer">Kemet</field>
+        <field name="Description">capacitor, 47pF, 0603</field>
+        <field name="MPN">C0603C470J3GACTU</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B3305D</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>47pF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Manufacturer">Kemet</field>
+        <field name="Description">capacitor, 47pF, 0603</field>
+        <field name="MPN">C0603C470J3GACTU</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B332F7</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">capacitor, 100nF, 0603</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B336CF</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B344F7</tstamp>
+    </comp>
+    <comp ref="P2">
+      <value>USB_OTG</value>
+      <footprint>kicad_pcb:CONN_USB</footprint>
+      <fields>
+        <field name="MPN">DX4R005JJ2R1800</field>
+        <field name="Manufacturer">JAE Electronics</field>
+        <field name="Description">Conn USB Micro-B</field>
+      </fields>
+      <libsource lib="conn" part="USB_OTG"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B35430</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B357D2</tstamp>
+    </comp>
+    <comp ref="R12">
+      <value>10</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710RL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10ohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B36EAD</tstamp>
+    </comp>
+    <comp ref="R4">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B3978E</tstamp>
+    </comp>
+    <comp ref="R5">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B39824</tstamp>
+    </comp>
+    <comp ref="R3">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B39AAD</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B39BF7</tstamp>
+    </comp>
+    <comp ref="C10">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B4681A</tstamp>
+    </comp>
+    <comp ref="C9">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B46CF7</tstamp>
+    </comp>
+    <comp ref="C11">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>56B4748E</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>MCP6004</value>
+      <footprint>SMD_Packages:SSOP-14</footprint>
+      <fields>
+        <field name="MPN">MCP6L04T-I/ST</field>
+        <field name="Description">Opamp 1MHz, Quad, TSSOP-14</field>
+        <field name="Manufacturer">Microchip</field>
+      </fields>
+      <libsource lib="linear" part="MCP6004"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5727ACFC</tstamp>
+    </comp>
+    <comp ref="R8">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5728655E</tstamp>
+    </comp>
+    <comp ref="C8">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572868D4</tstamp>
+    </comp>
+    <comp ref="R11">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57289F24</tstamp>
+    </comp>
+    <comp ref="C12">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57289FD3</tstamp>
+    </comp>
+    <comp ref="R13">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57293453</tstamp>
+    </comp>
+    <comp ref="C13">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572934E7</tstamp>
+    </comp>
+    <comp ref="R14">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57293CFB</tstamp>
+    </comp>
+    <comp ref="C14">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 100nF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57293DAB</tstamp>
+    </comp>
+    <comp ref="W2">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57298B1F</tstamp>
+    </comp>
+    <comp ref="W3">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729A500</tstamp>
+    </comp>
+    <comp ref="W1">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729AB0D</tstamp>
+    </comp>
+    <comp ref="W4">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729ABD5</tstamp>
+    </comp>
+    <comp ref="W5">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729AC9D</tstamp>
+    </comp>
+    <comp ref="W8">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729B07A</tstamp>
+    </comp>
+    <comp ref="W9">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729B3CC</tstamp>
+    </comp>
+    <comp ref="W10">
+      <value>TEST_1P</value>
+      <footprint>Measurement_Points:Measurement_Point_Round-SMD-Pad_Small</footprint>
+      <fields>
+        <field name="Description">test point</field>
+      </fields>
+      <libsource lib="conn" part="TEST_1P"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5729BA44</tstamp>
+    </comp>
+    <comp ref="R15">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A513D</tstamp>
+    </comp>
+    <comp ref="C15">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A51FC</tstamp>
+    </comp>
+    <comp ref="C18">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A6497</tstamp>
+    </comp>
+    <comp ref="C17">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A6E9B</tstamp>
+    </comp>
+    <comp ref="C16">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A6F28</tstamp>
+    </comp>
+    <comp ref="C20">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A7AC4</tstamp>
+    </comp>
+    <comp ref="C19">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A7C2F</tstamp>
+    </comp>
+    <comp ref="C22">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A7DEE</tstamp>
+    </comp>
+    <comp ref="C21">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>572A7E02</tstamp>
+    </comp>
+    <comp ref="C23">
+      <value>1uF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">capacitor, 1uF, 0603</field>
+        <field name="MPN">CC0603ZRY5V7BB105</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>574F28EC</tstamp>
+    </comp>
+    <comp ref="R16">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>574F29C0</tstamp>
+    </comp>
+    <comp ref="P4">
+      <value>CONN_01X06</value>
+      <footprint>kicad_pcb:CONN_2x3_SOCKET</footprint>
+      <fields>
+        <field name="MPN">A06-LC-TT</field>
+        <field name="Description">DIP socket, 2x3</field>
+        <field name="Manufacturer">Assmann WSW Components</field>
+      </fields>
+      <libsource lib="conn" part="CONN_01X06"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5755ECF2</tstamp>
+    </comp>
+    <comp ref="P3">
+      <value>CONN_01X06</value>
+      <footprint>kicad_pcb:CONN_1x6_OSTTC062162</footprint>
+      <fields>
+        <field name="MPN">OSTTC062162</field>
+        <field name="Description">terminal block, 5.08mm, 6pos</field>
+        <field name="Manufacturer">On Shore Technology, Inc.</field>
+      </fields>
+      <libsource lib="conn" part="CONN_01X06"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57571AC7</tstamp>
+    </comp>
+    <comp ref="R17">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5757597B</tstamp>
+    </comp>
+    <comp ref="R18">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57575D8D</tstamp>
+    </comp>
+    <comp ref="R19">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57575E6A</tstamp>
+    </comp>
+    <comp ref="R20">
+      <value>1k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="Description">resistor, 1kohm, 0603</field>
+        <field name="MPN">RC0603FR-071KL</field>
+        <field name="Manufacturer">Yageo</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57575F44</tstamp>
+    </comp>
+    <comp ref="C24">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">capacitor, 100nF, 0603</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57576833</tstamp>
+    </comp>
+    <comp ref="C26">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">capacitor, 100nF, 0603</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57576AAF</tstamp>
+    </comp>
+    <comp ref="C25">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">capacitor, 100nF, 0603</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57576B88</tstamp>
+    </comp>
+    <comp ref="C27">
+      <value>100nF</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">CC0603ZRY5V7BB104</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">capacitor, 100nF, 0603</field>
+      </fields>
+      <libsource lib="custom" part="Csmall"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>57576C6C</tstamp>
+    </comp>
+    <comp ref="P5">
+      <value>CONN_01X02</value>
+      <footprint>Pin_Headers:Pin_Header_Straight_1x02</footprint>
+      <libsource lib="conn" part="CONN_01X02"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>575C6730</tstamp>
+    </comp>
+    <comp ref="R21">
+      <value>10k</value>
+      <footprint>kicad_pcb:SM_0603</footprint>
+      <fields>
+        <field name="MPN">RC0603FR-0710KL</field>
+        <field name="Manufacturer">Yageo</field>
+        <field name="Description">resistor, 10kohm, 0603</field>
+      </fields>
+      <libsource lib="custom" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>575C7DE0</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="conn" part="CONN_01X02">
+      <description>Connector 01x02</description>
+      <footprints>
+        <fp>Pin_Header_Straight_1X02</fp>
+        <fp>Pin_Header_Angled_1X02</fp>
+        <fp>Socket_Strip_Straight_1X02</fp>
+        <fp>Socket_Strip_Angled_1X02</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X02</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+        <pin num="2" name="P2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="CONN_01X05">
+      <description>Connector 01x05</description>
+      <footprints>
+        <fp>Pin_Header_Straight_1X05</fp>
+        <fp>Pin_Header_Angled_1X05</fp>
+        <fp>Socket_Strip_Straight_1X05</fp>
+        <fp>Socket_Strip_Angled_1X05</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X05</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+        <pin num="2" name="P2" type="passive"/>
+        <pin num="3" name="P3" type="passive"/>
+        <pin num="4" name="P4" type="passive"/>
+        <pin num="5" name="P5" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="CONN_01X06">
+      <description>Connector 01x06</description>
+      <footprints>
+        <fp>Pin_Header_Straight_1X06</fp>
+        <fp>Pin_Header_Angled_1X06</fp>
+        <fp>Socket_Strip_Straight_1X06</fp>
+        <fp>Socket_Strip_Angled_1X06</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X06</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+        <pin num="2" name="P2" type="passive"/>
+        <pin num="3" name="P3" type="passive"/>
+        <pin num="4" name="P4" type="passive"/>
+        <pin num="5" name="P5" type="passive"/>
+        <pin num="6" name="P6" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="custom" part="Csmall">
+      <footprints>
+        <fp>SM*</fp>
+        <fp>C?</fp>
+        <fp>C1-1</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">Csmall</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="linear" part="LM2902N">
+      <aliases>
+        <alias>LM324</alias>
+        <alias>TLC274</alias>
+        <alias>TL074</alias>
+        <alias>LM324N</alias>
+        <alias>LM324AN</alias>
+        <alias>MCP6004</alias>
+      </aliases>
+      <description>Quad Op amp.</description>
+      <docs>op_amps/lm324.pdf</docs>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">LM2902N</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="output"/>
+        <pin num="2" name="-" type="input"/>
+        <pin num="3" name="+" type="input"/>
+        <pin num="4" name="V+" type="power_in"/>
+        <pin num="5" name="+" type="input"/>
+        <pin num="6" name="-" type="input"/>
+        <pin num="7" name="~" type="output"/>
+        <pin num="8" name="~" type="output"/>
+        <pin num="9" name="-" type="input"/>
+        <pin num="10" name="+" type="input"/>
+        <pin num="11" name="V-" type="power_in"/>
+        <pin num="12" name="+" type="input"/>
+        <pin num="13" name="-" type="input"/>
+        <pin num="14" name="~" type="output"/>
+      </pins>
+    </libpart>
+    <libpart lib="custom" part="R">
+      <description>Resistance</description>
+      <footprints>
+        <fp>R?</fp>
+        <fp>SM0603</fp>
+        <fp>SM0805</fp>
+        <fp>R?-*</fp>
+        <fp>SM1206</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="TEST_1P">
+      <description>point</description>
+      <fields>
+        <field name="Reference">W</field>
+        <field name="Value">TEST_1P</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="USB_OTG">
+      <description>micro/mini connector</description>
+      <footprints>
+        <fp>USB*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">USB_OTG</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VCC" type="power_out"/>
+        <pin num="2" name="D-" type="passive"/>
+        <pin num="3" name="D+" type="passive"/>
+        <pin num="4" name="ID" type="power_in"/>
+        <pin num="5" name="GND" type="power_in"/>
+        <pin num="6" name="shield" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="custom" part="ft230x">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">ft230x</field>
+      </fields>
+      <pins>
+        <pin num="1" name="TXD" type="input"/>
+        <pin num="2" name="~RTS" type="input"/>
+        <pin num="3" name="VCCIO" type="input"/>
+        <pin num="4" name="RXD" type="input"/>
+        <pin num="5" name="GND" type="input"/>
+        <pin num="6" name="~CTS" type="input"/>
+        <pin num="7" name="CBUS2" type="input"/>
+        <pin num="8" name="USBDP" type="input"/>
+        <pin num="9" name="USBDM" type="input"/>
+        <pin num="10" name="3V3OUT" type="input"/>
+        <pin num="11" name="~RESET" type="input"/>
+        <pin num="12" name="VCC" type="input"/>
+        <pin num="13" name="GND" type="input"/>
+        <pin num="14" name="CBUS1" type="input"/>
+        <pin num="15" name="CBUS0" type="input"/>
+        <pin num="16" name="CBUS3" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="custom" part="pic24f08km202">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">pic24f08km202</field>
+      </fields>
+      <pins>
+        <pin num="1" name="RA5" type="input"/>
+        <pin num="2" name="RA0" type="input"/>
+        <pin num="3" name="RA1" type="input"/>
+        <pin num="4" name="RB0" type="input"/>
+        <pin num="5" name="RB1" type="input"/>
+        <pin num="6" name="RB2" type="input"/>
+        <pin num="7" name="RB3" type="input"/>
+        <pin num="8" name="Vss" type="input"/>
+        <pin num="9" name="RA2" type="input"/>
+        <pin num="10" name="RA3" type="input"/>
+        <pin num="11" name="RB4" type="input"/>
+        <pin num="12" name="RA4" type="input"/>
+        <pin num="13" name="Vdd" type="input"/>
+        <pin num="14" name="RB5" type="input"/>
+        <pin num="15" name="RB6" type="input"/>
+        <pin num="16" name="RB7" type="input"/>
+        <pin num="17" name="RB8" type="input"/>
+        <pin num="18" name="RB9" type="input"/>
+        <pin num="19" name="RA7" type="input"/>
+        <pin num="20" name="RA6" type="input"/>
+        <pin num="21" name="RB10" type="input"/>
+        <pin num="22" name="RB11" type="input"/>
+        <pin num="23" name="RB12" type="input"/>
+        <pin num="24" name="RB13" type="input"/>
+        <pin num="25" name="RB14" type="input"/>
+        <pin num="26" name="RB15" type="input"/>
+        <pin num="27" name="AVss" type="input"/>
+        <pin num="28" name="AVdd" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="custom">
+      <uri>C:\Users\Jason\Google Drive\uPDSys\libs\kicad_schem\custom.lib</uri>
+    </library>
+    <library logical="conn">
+      <uri>C:\Program Files\KiCad\share\kicad\library\conn.lib</uri>
+    </library>
+    <library logical="linear">
+      <uri>C:\Program Files\KiCad\share\kicad\library\linear.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="Net-(R2-Pad2)">
+      <node ref="U1" pin="6"/>
+      <node ref="R2" pin="2"/>
+      <node ref="R5" pin="2"/>
+    </net>
+    <net code="2" name="Net-(C8-Pad1)">
+      <node ref="C8" pin="1"/>
+      <node ref="R8" pin="1"/>
+      <node ref="R13" pin="2"/>
+    </net>
+    <net code="3" name="Net-(C6-Pad1)">
+      <node ref="C6" pin="1"/>
+      <node ref="R15" pin="2"/>
+      <node ref="R6" pin="1"/>
+    </net>
+    <net code="4" name="Net-(R3-Pad1)">
+      <node ref="R3" pin="1"/>
+      <node ref="U1" pin="5"/>
+      <node ref="R4" pin="2"/>
+    </net>
+    <net code="5" name="/IsenseReference">
+      <node ref="R3" pin="2"/>
+      <node ref="U1" pin="2"/>
+      <node ref="U1" pin="1"/>
+      <node ref="W9" pin="1"/>
+    </net>
+    <net code="6" name="PGED">
+      <node ref="P1" pin="4"/>
+      <node ref="U2" pin="14"/>
+    </net>
+    <net code="7" name="PGEC">
+      <node ref="U2" pin="15"/>
+      <node ref="P1" pin="5"/>
+    </net>
+    <net code="8" name="FT230X_24MHZ">
+      <node ref="U3" pin="15"/>
+      <node ref="U2" pin="9"/>
+    </net>
+    <net code="9" name="Net-(R9-Pad1)">
+      <node ref="U3" pin="9"/>
+      <node ref="R9" pin="1"/>
+    </net>
+    <net code="10" name="Net-(R10-Pad1)">
+      <node ref="R10" pin="1"/>
+      <node ref="U3" pin="8"/>
+    </net>
+    <net code="11" name="Net-(C2-Pad1)">
+      <node ref="C2" pin="1"/>
+      <node ref="U2" pin="20"/>
+    </net>
+    <net code="12" name="Net-(C5-Pad1)">
+      <node ref="C5" pin="1"/>
+      <node ref="R10" pin="2"/>
+      <node ref="P2" pin="3"/>
+    </net>
+    <net code="13" name="FT230X_RX">
+      <node ref="W5" pin="1"/>
+      <node ref="U3" pin="4"/>
+      <node ref="U2" pin="16"/>
+    </net>
+    <net code="14" name="FT230X_TX">
+      <node ref="W4" pin="1"/>
+      <node ref="U2" pin="6"/>
+      <node ref="U3" pin="1"/>
+    </net>
+    <net code="15" name="~MCLR">
+      <node ref="U2" pin="1"/>
+      <node ref="P1" pin="1"/>
+      <node ref="R1" pin="1"/>
+    </net>
+    <net code="16" name="LD_VOLTAGE_1">
+      <node ref="P3" pin="6"/>
+      <node ref="P4" pin="3"/>
+      <node ref="P4" pin="5"/>
+      <node ref="R4" pin="1"/>
+      <node ref="U2" pin="3"/>
+      <node ref="R12" pin="2"/>
+    </net>
+    <net code="17" name="GateVoltage">
+      <node ref="U2" pin="12"/>
+      <node ref="P3" pin="4"/>
+      <node ref="P4" pin="6"/>
+      <node ref="P4" pin="1"/>
+      <node ref="C15" pin="1"/>
+      <node ref="R15" pin="1"/>
+    </net>
+    <net code="18" name="LD_VOLTAGE_0">
+      <node ref="P4" pin="4"/>
+      <node ref="P4" pin="2"/>
+      <node ref="P3" pin="5"/>
+      <node ref="U1" pin="8"/>
+      <node ref="U2" pin="4"/>
+      <node ref="U1" pin="9"/>
+    </net>
+    <net code="19" name="Net-(R2-Pad1)">
+      <node ref="U2" pin="17"/>
+      <node ref="W8" pin="1"/>
+      <node ref="U1" pin="7"/>
+      <node ref="R2" pin="1"/>
+    </net>
+    <net code="20" name="Net-(C3-Pad1)">
+      <node ref="P2" pin="2"/>
+      <node ref="C3" pin="1"/>
+      <node ref="R9" pin="2"/>
+    </net>
+    <net code="21" name="Net-(C7-Pad1)">
+      <node ref="U3" pin="10"/>
+      <node ref="U3" pin="11"/>
+      <node ref="U3" pin="3"/>
+      <node ref="C7" pin="1"/>
+    </net>
+    <net code="22" name="FT230X_TX_~SLEEP">
+      <node ref="U3" pin="16"/>
+      <node ref="U2" pin="5"/>
+    </net>
+    <net code="23" name="FT230X_TX_LED">
+      <node ref="U3" pin="7"/>
+    </net>
+    <net code="24" name="FT230X_RX_LED">
+      <node ref="U3" pin="14"/>
+    </net>
+    <net code="25" name="Net-(C25-Pad1)">
+      <node ref="C25" pin="1"/>
+      <node ref="R20" pin="2"/>
+      <node ref="R18" pin="1"/>
+    </net>
+    <net code="26" name="GNDD">
+      <node ref="C20" pin="2"/>
+      <node ref="C5" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="C7" pin="2"/>
+      <node ref="C19" pin="2"/>
+      <node ref="C2" pin="2"/>
+      <node ref="C4" pin="2"/>
+      <node ref="C6" pin="2"/>
+      <node ref="U3" pin="13"/>
+      <node ref="C14" pin="2"/>
+      <node ref="C17" pin="2"/>
+      <node ref="P1" pin="3"/>
+      <node ref="W1" pin="1"/>
+      <node ref="C18" pin="2"/>
+      <node ref="C15" pin="2"/>
+      <node ref="C1" pin="2"/>
+      <node ref="C16" pin="2"/>
+      <node ref="C23" pin="2"/>
+      <node ref="P2" pin="5"/>
+      <node ref="P2" pin="6"/>
+      <node ref="C21" pin="2"/>
+      <node ref="U2" pin="27"/>
+      <node ref="C22" pin="2"/>
+      <node ref="U3" pin="5"/>
+      <node ref="U2" pin="8"/>
+      <node ref="C8" pin="2"/>
+      <node ref="P5" pin="2"/>
+      <node ref="C13" pin="2"/>
+      <node ref="C12" pin="2"/>
+      <node ref="C27" pin="2"/>
+      <node ref="C26" pin="2"/>
+      <node ref="C25" pin="2"/>
+      <node ref="C24" pin="2"/>
+      <node ref="P3" pin="3"/>
+      <node ref="C10" pin="2"/>
+      <node ref="C9" pin="2"/>
+      <node ref="U1" pin="11"/>
+      <node ref="C11" pin="2"/>
+    </net>
+    <net code="27" name="PWM3">
+      <node ref="R18" pin="2"/>
+      <node ref="U2" pin="18"/>
+    </net>
+    <net code="28" name="PWM4">
+      <node ref="U2" pin="19"/>
+      <node ref="R17" pin="2"/>
+    </net>
+    <net code="29" name="Net-(C24-Pad1)">
+      <node ref="R19" pin="2"/>
+      <node ref="C24" pin="1"/>
+      <node ref="R17" pin="1"/>
+    </net>
+    <net code="30" name="~BOOT">
+      <node ref="P5" pin="1"/>
+      <node ref="R21" pin="1"/>
+      <node ref="U2" pin="2"/>
+    </net>
+    <net code="31" name="+5V">
+      <node ref="C22" pin="1"/>
+      <node ref="C19" pin="1"/>
+      <node ref="C9" pin="1"/>
+      <node ref="C21" pin="1"/>
+      <node ref="U1" pin="4"/>
+      <node ref="C11" pin="1"/>
+      <node ref="C16" pin="1"/>
+      <node ref="C17" pin="1"/>
+      <node ref="C20" pin="1"/>
+      <node ref="C10" pin="1"/>
+      <node ref="U2" pin="28"/>
+      <node ref="C1" pin="1"/>
+      <node ref="P2" pin="1"/>
+      <node ref="R1" pin="2"/>
+      <node ref="R21" pin="2"/>
+      <node ref="P1" pin="2"/>
+      <node ref="U3" pin="12"/>
+      <node ref="U2" pin="13"/>
+      <node ref="C18" pin="1"/>
+    </net>
+    <net code="32" name="/x">
+      <node ref="R20" pin="1"/>
+      <node ref="C27" pin="1"/>
+      <node ref="P3" pin="2"/>
+    </net>
+    <net code="33" name="/y">
+      <node ref="R19" pin="1"/>
+      <node ref="P3" pin="1"/>
+      <node ref="C26" pin="1"/>
+    </net>
+    <net code="34" name="Net-(C14-Pad1)">
+      <node ref="R14" pin="1"/>
+      <node ref="R11" pin="2"/>
+      <node ref="C14" pin="1"/>
+    </net>
+    <net code="35" name="Net-(C4-Pad1)">
+      <node ref="R7" pin="1"/>
+      <node ref="C4" pin="1"/>
+      <node ref="U1" pin="3"/>
+    </net>
+    <net code="36" name="Net-(C12-Pad1)">
+      <node ref="U1" pin="12"/>
+      <node ref="R11" pin="1"/>
+      <node ref="C12" pin="1"/>
+    </net>
+    <net code="37" name="Net-(U2-Pad10)">
+      <node ref="W2" pin="1"/>
+      <node ref="U2" pin="10"/>
+    </net>
+    <net code="38" name="Net-(U2-Pad11)">
+      <node ref="W3" pin="1"/>
+      <node ref="U2" pin="11"/>
+    </net>
+    <net code="39" name="Net-(C13-Pad1)">
+      <node ref="R13" pin="1"/>
+      <node ref="U1" pin="10"/>
+      <node ref="C13" pin="1"/>
+    </net>
+    <net code="40" name="Net-(C23-Pad1)">
+      <node ref="R7" pin="2"/>
+      <node ref="C23" pin="1"/>
+      <node ref="R16" pin="1"/>
+    </net>
+    <net code="41" name="Net-(P2-Pad4)">
+      <node ref="P2" pin="4"/>
+    </net>
+    <net code="42" name="Net-(U3-Pad2)">
+      <node ref="U3" pin="2"/>
+    </net>
+    <net code="43" name="Net-(U2-Pad25)">
+      <node ref="U2" pin="25"/>
+    </net>
+    <net code="44" name="Net-(U3-Pad6)">
+      <node ref="U3" pin="6"/>
+    </net>
+    <net code="45" name="Net-(U2-Pad23)">
+      <node ref="U2" pin="23"/>
+    </net>
+    <net code="46" name="Net-(U2-Pad24)">
+      <node ref="U2" pin="24"/>
+    </net>
+    <net code="47" name="/DAC_high">
+      <node ref="R8" pin="2"/>
+      <node ref="U2" pin="26"/>
+    </net>
+    <net code="48" name="/DAC_low">
+      <node ref="U2" pin="7"/>
+      <node ref="R14" pin="2"/>
+    </net>
+    <net code="49" name="/PWM1">
+      <node ref="R16" pin="2"/>
+      <node ref="U2" pin="21"/>
+    </net>
+    <net code="50" name="/PWM2">
+      <node ref="R6" pin="2"/>
+      <node ref="U2" pin="22"/>
+    </net>
+    <net code="51" name="/-Vout">
+      <node ref="W10" pin="1"/>
+      <node ref="R5" pin="1"/>
+      <node ref="R12" pin="1"/>
+      <node ref="U1" pin="13"/>
+      <node ref="U1" pin="14"/>
+    </net>
+  </nets>
+</export>
