@@ -184,7 +184,6 @@ class Plot4Q(tk.Canvas):
 
         for item_tag in del_list:
             self.plot.delete(item_tag)
-            print('deleted tags: ', item_tag)
 
     def get_scatter(self, tag='current'):
         return self.current_points[tag]
