@@ -28,8 +28,6 @@ class Plot4Q(tk.Canvas):
         self.plot_series_number = 0
 
         self.current_points = {}
-        self.green_dot = ImageTk.PhotoImage(Image.open("images/dot-green.png"))
-        self.blue_dot = ImageTk.PhotoImage(Image.open("images/dot-blue.png"))
 
     def remove_points(self):
         self.plot.delete('data_point')
