@@ -202,6 +202,6 @@ if __name__ == "__main__":
 
     points = [(0,0), (10,10), (20,20)]
     app.scatter(points)
-    app.scatter(erase=True)
+    app.scatter()
 
     root.mainloop()
