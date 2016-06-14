@@ -89,6 +89,8 @@ class CurveTracer(tk.Frame):
         self.shortcut_bar.add_btn(image_path='images/btn-load.png', command=self.load_waveform)
         self.shortcut_bar.add_btn(image_path='images/btn-erase.png', command=self.clear_waveforms)
         self.shortcut_bar.add_btn(image_path='images/connections.png', command=self.select_port_window)
+        self.shortcut_bar.add_btn(image_path='images/btn-pause.png', command=self.pause_plot)
+        self.shortcut_bar.add_btn(image_path='images/btn-run.png', command=self.run_plot)
         self.shortcut_bar.add_btn(image_path='images/cal.png', command=self.send_cal_command)
         self.shortcut_bar.add_btn(image_path='images/select-output.png', command=self.select_output_mode)
         self.shortcut_bar.add_btn(image_path='images/gate-voltage.png', command=self.select_gate_voltage_window)
@@ -203,7 +205,6 @@ class CurveTracer(tk.Frame):
         f = filedialog.askopenfile(mode='r', defaultextension='.csv',  filetypes=[('comma-separated values', '.csv')])
 
         if f:
-            self.loaded_points = []
             csv_reader = csv.reader(f, delimiter=',')
             for row in csv_reader:
                 try:
@@ -276,6 +277,12 @@ class CurveTracer(tk.Frame):
 
         btn_sel = tk.Button(port_selector_window, text='Select', command=select_port)
         btn_sel.pack(fill=tk.BOTH, expand=1, padx=self.widget_padding, pady=self.widget_padding)
+
+    def pause_plot(self):
+        pass
+
+    def run_plot(self):
+        pass
 
     def select_gate_voltage_window(self):
         gate_voltage_selector_window = tk.Toplevel(padx=self.widget_padding, pady=self.widget_padding)
