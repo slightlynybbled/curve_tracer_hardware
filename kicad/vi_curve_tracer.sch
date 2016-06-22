@@ -37,7 +37,7 @@ encoding utf-8
 Sheet 1 1
 Title "Curve Tracer"
 Date "2016-06-06"
-Rev "1.0"
+Rev "1.1"
 Comp "for(embed)"
 Comment1 ""
 Comment2 ""
