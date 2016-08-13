@@ -2,7 +2,7 @@
 <export version="D">
   <design>
     <source>C:/code/curve_tracer_hardware/kicad/vi_curve_tracer.sch</source>
-    <date>7/8/2016 12:13:53 PM</date>
+    <date>8/13/2016 10:36:28 AM</date>
     <tool>Eeschema 4.0.1-stable</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -24,7 +24,7 @@
       <footprint>kicad_pcb:SSOP-28</footprint>
       <fields>
         <field name="Manufacturer">Microchip, Inc.</field>
-        <field name="MPN">PIC24FV16KM202-I/SO</field>
+        <field name="MPN">PIC24FV16KM202-I/SS</field>
         <field name="Description">Microcontroller</field>
       </fields>
       <libsource lib="custom" part="pic24f08km202"/>
@@ -313,6 +313,7 @@
         <field name="MPN">MCP6L04T-E/ST</field>
         <field name="Description">Opamp 1MHz, Quad, TSSOP-14</field>
         <field name="Manufacturer">Microchip</field>
+        <field name="PN">ELOAMC6L0400A</field>
       </fields>
       <libsource lib="linear" part="MCP6004"/>
       <sheetpath names="/" tstamps="/"/>

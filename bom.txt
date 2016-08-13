@@ -13,5 +13,5 @@ Item	Qty	Reference	Manufacturer	MPN	Description	Datasheet
 12	12	 R4, R5, R6, R8, R11, R13, R14, R15, R17, R18, R19, R20	Yageo	RC0603FR-071KL	resistor, 1kohm, 0603		
 13	2	 R9, R10	Yageo	RC0603FR-0727RL	resistor, 27ohm, 0603		
 14	1	 U1	Microchip	MCP6L04T-E/ST	Opamp 1MHz, Quad, TSSOP-14		
-15	1	 U2	Microchip, Inc.	PIC24FV16KM202-I/SO	Microcontroller		
+15	1	 U2	Microchip, Inc.	PIC24FV16KM202-I/SS	Microcontroller		
 16	1	 U3	FTDI	FT230XS-R	USB-to-UART, IC, SSOP-16		
